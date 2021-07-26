@@ -149,3 +149,6 @@ Thumbs.db
 *.pyc
 # Sphinx
 /document/build
+
+# app
+/tests/tmp
