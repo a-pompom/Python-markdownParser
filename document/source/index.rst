@@ -4,3 +4,4 @@ Contents:
    :maxdepth: 2
 
    main
+   architecture
