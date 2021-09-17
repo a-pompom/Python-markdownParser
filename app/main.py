@@ -1,7 +1,9 @@
 import os
 import sys
 
-from markdown_parser.app.html_builder import HtmlBuilder
+from app.markdown_parser import MarkdownParser
+from app.converter import Converter
+from app.html_builder import HtmlBuilder
 
 IN_AND_OUT_ARG_COUNT = 3
 
@@ -38,14 +40,19 @@ def parse_md_to_html(in_file_path: str, out_file_path: str):
     :param out_file_path: 出力HTMLファイルパス
     """
 
-    builder = HtmlBuilder()
-
+    # マークダウンをパース
     with open(in_file_path, 'r') as f:
-        for line in f:
-            builder.append(line)
+        markdown_parser = MarkdownParser()
+        markdown_parse_result = markdown_parser.parse(f.readlines())
 
+    # マークダウン・HTMLを中継
+    converter = Converter()
+    html_input = converter.convert(markdown_parse_result)
+
+    # 変換結果HTMLを生成
     with open(out_file_path, 'w') as fw:
-        fw.write(builder.text)
+        html_builder = HtmlBuilder()
+        fw.write(html_builder.build(html_input))
 
 
 if __name__ == '__main__':
