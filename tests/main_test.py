@@ -1,6 +1,6 @@
-from markdown_parser.app.main import parse_md_to_html
+from app.main import parse_md_to_html
 
-from markdown_parser.tests.util import assert_that_text_file_content_is_same
+from tests.util import assert_that_text_file_content_is_same
 
 
 class TestMain:
@@ -9,7 +9,7 @@ class TestMain:
         # GIVEN
         given_path = {
             'input': './markdown/plain.md',
-            'output': './tmp/plain.txt',
+            'output': './tmp/plain.html',
             'expected': './html/plain.html'
         }
 
