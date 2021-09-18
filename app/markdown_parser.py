@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Union
 import dataclasses
+import re
 
 
 @dataclasses.dataclass
@@ -48,6 +49,17 @@ class MarkdownParser:
 
 class Parser:
     """ マークダウンで書かれた行の解釈を責務に持つ """
+
+    def is_target(self, markdown_text: str) -> bool:
+        """
+        マークダウンの行が現在参照しているパーサの処理対象であるか判定
+        たとえば、`# Heading`の場合、HeadingParserのみTrueを返し、それ以外はFalseを返す
+
+        :param markdown_text: 判定対象行
+        :return: パース対象 ->True パース対象でない -> False
+        """
+        raise NotImplementedError()
+
     def parse(self, markdown_text: str) -> Block:
         """
         マークダウンの行を解釈し、種類に応じてBlock/Inlineを生成
@@ -60,10 +72,25 @@ class Parser:
 
 class HeadingParser(Parser):
     """ ヘッダの解釈を責務に持つ"""
+    PATTERN = '^(#+) (.*)'
 
     def __init__(self):
         pass
 
+    def is_target(self, markdown_text: str) -> bool:
+        return re.match(self.PATTERN, markdown_text) is not None
+
+    # TODO 将来的にはinline_parserをリストで受け取り、Inline要素も解釈できるようにしたい
+    # TODO スタイルはオブジェクトへと変更 オブジェクトのプロパティでヘッダの種類を識別
     def parse(self, markdown_text: str) -> Block:
-        # TODO 変換処理実装
-        pass
+        """
+        ヘッダ行を解釈
+
+        :param markdown_text: 処理対象行
+        :return: ヘッダを表すBlock要素
+        """
+
+        match: re.Match = re.match(self.PATTERN, markdown_text)
+        heading_style, text = (match.group(1), match.group(2))
+
+        return Block('Heading', [text])
