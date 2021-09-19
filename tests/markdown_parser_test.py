@@ -1,6 +1,8 @@
 import pytest
 
 from app.markdown_parser import MarkdownParser, ParseResult, Block, HeadingParser
+from app.element.block import PlainBlock
+from app.element.style import Plain, Heading
 from tests.util import equal_for_parse_result
 
 
@@ -9,7 +11,7 @@ class TestMarkdownParser:
     def test_plain(self):
         # GIVEN
         sut = MarkdownParser()
-        expected = ParseResult([Block('', ['HelloWorld'])])
+        expected = ParseResult([PlainBlock(Plain(), 'HelloWorld')])
         # WHEN
         actual = sut.parse(['HelloWorld'])
         # THEN
@@ -31,10 +33,14 @@ class TestMarkdownParser:
             # THEN
             assert actual == expected
 
-        def test_parse(self):
+        @pytest.mark.parametrize(('heading_text', 'heading_size', 'text'), [
+            ('# this is heading', 1, 'this is heading'),
+            ('###  3rd heading', 3, ' 3rd heading'),
+        ], ids=['1st heading', '3rd heading'])
+        def test_parse(self, heading_text: str, heading_size: int, text: str):
             # GIVEN
             sut = HeadingParser()
             # WHEN
-            actual = sut.parse('# This is Heading')
-            assert actual.style == 'Heading'
-            assert actual.children[0] == 'This is Heading'
+            actual = sut.parse(heading_text)
+            assert isinstance(actual.style, Heading) and actual.style.size == heading_size
+            assert actual.children[0] == text
