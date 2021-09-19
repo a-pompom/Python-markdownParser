@@ -3,19 +3,8 @@ from typing import Union
 import dataclasses
 import re
 
-
-@dataclasses.dataclass
-class Inline:
-    """ aタグのようなインラインスタイルを保持 """
-    style: str
-    text: str
-
-
-@dataclasses.dataclass
-class Block:
-    """ 行要素を保持 """
-    style: str
-    children: list[Union['Block', Inline, str]]
+from app.element.style import Plain, Heading
+from app.element.block import Block, PlainBlock, HeadingBlock
 
 
 @dataclasses.dataclass
@@ -39,12 +28,28 @@ class MarkdownParser:
         :return: ツリー構造による変換結果オブジェクト
         """
 
-        # TODO ParserでBlockオブジェクトをつくりたい
         result = []
         for line in markdown_text:
-            result.append(Block('', [line]))
+            block = self._generate_block(line)
+            result.append(block)
 
         return ParseResult(result)
+
+    def _generate_block(self, line: str):
+        """
+        マークダウンパーサを介して行をBlock要素へ変換
+
+        :param line: 処理対象行
+        :return: 変換結果のBlock要素
+        """
+
+        for parser in self.parsers:
+            block: Union[False, Block] = parser.is_target(line) and parser.parse(line)
+
+            if block:
+                return block
+
+        return PlainBlock(Plain(), line)
 
 
 class Parser:
@@ -81,7 +86,6 @@ class HeadingParser(Parser):
         return re.match(self.PATTERN, markdown_text) is not None
 
     # TODO 将来的にはinline_parserをリストで受け取り、Inline要素も解釈できるようにしたい
-    # TODO スタイルはオブジェクトへと変更 オブジェクトのプロパティでヘッダの種類を識別
     def parse(self, markdown_text: str) -> Block:
         """
         ヘッダ行を解釈
@@ -93,4 +97,4 @@ class HeadingParser(Parser):
         match: re.Match = re.match(self.PATTERN, markdown_text)
         heading_style, text = (match.group(1), match.group(2))
 
-        return Block('Heading', [text])
+        return HeadingBlock(Heading(size=len(heading_style)), [text])
