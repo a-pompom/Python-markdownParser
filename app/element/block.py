@@ -9,14 +9,13 @@ from app.element.inline import Inline
 class Block:
     """ 行要素を保持 """
     style: Style
-    children: list[Union['Block', Inline, str]]
+    children: list[Union[Inline, 'Block']]
 
 
 @dataclasses.dataclass
 class PlainBlock(Block):
     """ どの記法にも属さない要素 """
     style: Plain
-    children: str
 
 
 @dataclasses.dataclass
