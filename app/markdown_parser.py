@@ -32,11 +32,27 @@ class MarkdownParser:
 
         result = []
         for line in markdown_text:
-            children = self._generate_inline_children(line)
+            inline_text = self._extract_inline_text(line)
+            children = self._generate_inline_children(inline_text)
+
             block = self._generate_block(line, children)
             result.append(block)
 
         return ParseResult(result)
+
+    def _extract_inline_text(self, markdown_text) -> str:
+        """
+        処理対象行からBlock要素の記法を除外したものを抽出
+
+        :param markdown_text: 対象行文字列
+        :return: 対象行文字列からBlock要素の記法を除いたもの
+        """
+
+        for block_parser in self.block_parsers:
+            if block_parser.is_target(markdown_text):
+                return block_parser.extract_text(markdown_text)
+
+        return markdown_text
 
     def _generate_inline_children(self, text: str) -> list[Inline]:
         """
@@ -51,22 +67,23 @@ class MarkdownParser:
         for parser in self.inline_parsers:
             # Inline要素が存在したとき、ただInline要素を抜き出すだけでは元のテキストのどの部分が対応していたか判別できない
             # 順序関係を維持し、複数のInline要素にも対応できるよう、前後の文字列も抜き出す
-            head, inline, tail = (
-                    parser.is_target(text) and parser.parse(text) or
-                    ('', PlainInline(Plain(), text), '')
-            )
-            # 前方
-            if head:
-                children.append(self._generate_inline_children(head))
+            if parser.is_target(text):
+                head, inline, tail = parser.parse(text)
 
-            # Inline
-            children.append(inline)
+                # 前方
+                if head:
+                    children.append(self._generate_inline_children(head))
 
-            # 後方
-            if tail:
-                children.append(self._generate_inline_children(tail))
+                # Inline
+                children.append(inline)
 
-        return children
+                # 後方
+                if tail:
+                    children.append(self._generate_inline_children(tail))
+
+                return children
+
+        return [PlainInline(Plain(), text)]
 
     def _generate_block(self, line: str, children: list[Inline]) -> Block:
         """
@@ -78,12 +95,10 @@ class MarkdownParser:
         """
 
         for parser in self.block_parsers:
-            block: Block = (
-                parser.is_target(line) and parser.parse(line, children) or
-                PlainBlock(Plain(), children)
-            )
+            if parser.is_target(line):
+                return parser.parse(line, children)
 
-            return block
+        return PlainBlock(Plain(), children)
 
 
 class BlockParser:
@@ -96,6 +111,16 @@ class BlockParser:
 
         :param markdown_text: 判定対象行
         :return: パース対象 ->True パース対象でない -> False
+        """
+        raise NotImplementedError()
+
+    def extract_text(self, markdown_text: str) -> str:
+        """
+        Inline要素を組み立てるとき、Block要素の記法が関与しないよう切り出し
+        これにより、Inline要素・Block要素それぞれのパース処理は、互いに関与せず、疎結合を保つことができる
+
+        :param markdown_text: 対象行文字列
+        :return: 対象行文字列からBlock要素の記法を抜いたもの
         """
         raise NotImplementedError()
 
@@ -119,6 +144,12 @@ class HeadingParser(BlockParser):
 
     def is_target(self, markdown_text: str) -> bool:
         return re.match(self.PATTERN, markdown_text) is not None
+
+    def extract_text(self, markdown_text: str) -> str:
+        match: re.Match = re.match(self.PATTERN, markdown_text)
+        _, text = (match.group(1), match.group(2))
+
+        return text
 
     def parse(self, markdown_text: str, children: list[Union[Inline, Block]]) -> Block:
         """
@@ -179,6 +210,6 @@ class LinkParser(InlineParser):
 
         match: re.Match = re.match(self.PATTERN, markdown_text)
         # 遷移先URL・リンクテキストを属性として切り出し
-        head_text, href, link_text, tail_text = (match.group(1), match.group(2), match.group(3), match.group(4))
+        head_text, link_text, href, tail_text = (match.group(1), match.group(2), match.group(3), match.group(4))
 
         return head_text, LinkInline(Link(href=href), link_text), tail_text
