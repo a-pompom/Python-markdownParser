@@ -14,3 +14,9 @@ class Heading(Style):
     """ ヘッダ要素を表現 """
     # h1, h3のようなヘッダの大きさを表現
     size: int
+
+
+@dataclasses.dataclass
+class Link(Style):
+    """ リンク要素を表現 """
+    href: str

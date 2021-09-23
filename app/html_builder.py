@@ -24,11 +24,14 @@ class HtmlBuilder:
 
                 line: str = (
                     (isinstance(block, HeadingBlock) and builder.build(block)) or
-                    (isinstance(block, PlainBlock) and block.children)
+                    (isinstance(block, PlainBlock) and self._get_plain_text(block))
                 )
                 html.append(line)
 
         return ''.join(html)
+
+    def _get_plain_text(self, block: PlainBlock) -> str:
+        return block.children[0].text
 
 
 class Builder:
@@ -54,5 +57,6 @@ class HeadingBuilder(Builder):
             if isinstance(child, str):
                 text = child
 
+        # <h1>text</h1>のような文字列を生成
         heading_expression = f'h{block.style.size}'
         return f'<{heading_expression}>{text}</{heading_expression}>'
