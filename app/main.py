@@ -1,7 +1,7 @@
 import os
 import sys
 
-from app.markdown_parser import MarkdownParser
+from app.markdown.parser import MarkdownParser
 from app.converter import Converter
 from app.html_builder import HtmlBuilder
 

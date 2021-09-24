@@ -1,5 +1,5 @@
 from app.converter import Converter
-from app.markdown_parser import ParseResult
+from app.markdown.parser import ParseResult
 from app.element.style import Plain
 from app.element.block import PlainBlock
 

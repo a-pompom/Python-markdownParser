@@ -1,4 +1,4 @@
-from app.markdown_parser import ParseResult
+from app.markdown.parser import ParseResult
 from app.element.block import Block, Children
 from app.element.inline import Inline
 from app.element.style import Style, Plain, Heading, Link

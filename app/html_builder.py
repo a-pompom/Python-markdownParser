@@ -1,4 +1,4 @@
-from app.markdown_parser import ParseResult
+from app.markdown.parser import ParseResult
 from app.element.block import Block, PlainBlock, HeadingBlock
 
 

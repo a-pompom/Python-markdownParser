@@ -1,7 +1,7 @@
 import pytest
 
 from app.html_builder import HtmlBuilder, HeadingBuilder
-from app.markdown_parser import ParseResult
+from app.markdown.parser import ParseResult
 from app.element.style import Plain, Heading
 from app.element.inline import PlainInline
 from app.element.block import PlainBlock, HeadingBlock

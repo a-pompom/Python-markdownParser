@@ -1,6 +1,6 @@
 import pytest
 
-from app.markdown_parser import MarkdownParser, ParseResult, HeadingParser, LinkParser
+from app.markdown.parser import MarkdownParser, ParseResult, HeadingParser, LinkParser
 from app.element.block import PlainBlock, HeadingBlock, Children
 from app.element.inline import PlainInline, LinkInline
 from app.element.style import Plain, Heading, Link
