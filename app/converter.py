@@ -1,4 +1,4 @@
-from app.markdown_parser import ParseResult
+from app.markdown.parser import ParseResult
 
 
 class Converter:

@@ -1,4 +1,4 @@
-from app.markdown_parser import ParseResult
+from app.markdown.parser import ParseResult
 from app.element.block import Block, Children
 from app.element.inline import Inline
 from app.element.style import Style, Plain, Heading, Link
@@ -17,6 +17,9 @@ def assert_that_text_file_content_is_same(expected_path: str, actual_path: str):
             assert actual.read() == expected.read()
 
 
+# パース結果の等価判定
+# 判定処理自体の妥当性は、各テストケースにより担保される
+# これは、結局判定処理のテストコードを書いても、評価するためのオブジェクトを生成する作業が個別のテストケースと変わらないためである
 def equal_for_inline(former: Inline, latter: Inline) -> bool:
     """
     Inline要素が等しいか検証

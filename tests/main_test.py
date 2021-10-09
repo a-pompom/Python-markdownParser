@@ -1,6 +1,6 @@
 from app.main import parse_md_to_html
 
-from tests.util import assert_that_text_file_content_is_same
+from tests.util_equality import assert_that_text_file_content_is_same
 
 
 class TestMain:
@@ -8,9 +8,9 @@ class TestMain:
     def test_plain(self):
         # GIVEN
         given_path = {
-            'input': './markdown/plain.md',
+            'input': './template/markdown/plain.md',
             'output': './tmp/plain.html',
-            'expected': './html/plain.html'
+            'expected': './template/html/plain.html'
         }
 
         # WHEN
