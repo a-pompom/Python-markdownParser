@@ -1,10 +1,10 @@
-import re
-
+from app.regex import regex
 from app.element.inline import Inline, PlainInline, LinkInline
 from app.element.style import Plain, Link
 
 
 class InlineParser:
+    """ Inline要素と対応するマークダウンの記法を解釈することを責務に持つ """
 
     def __init__(self):
         # 各変換処理を表現する要素を初期化
@@ -28,14 +28,14 @@ class InlineParser:
 
                 # 前方
                 if head:
-                    children.append(self.parse(head))
+                    children = [*children, *self.parse(head)]
 
                 # Inline
                 children.append(inline)
 
                 # 後方
                 if tail:
-                    children.append(self.parse(tail))
+                    children = [*children, *self.parse(tail)]
 
                 return children
 
@@ -74,7 +74,7 @@ class LinkParser(IParser):
     PATTERN = r'(.*)\[(.*)\]\((.*)\)(.*)'
 
     def is_target(self, markdown_text: str) -> bool:
-        return re.match(self.PATTERN, markdown_text) is not None
+        return regex.contain(self.PATTERN, markdown_text)
 
     def parse(self, markdown_text: str) -> tuple[str, Inline, str]:
         """
@@ -84,8 +84,7 @@ class LinkParser(IParser):
         :return: リンクを表すInline要素
         """
 
-        match: re.Match = re.match(self.PATTERN, markdown_text)
         # 遷移先URL・リンクテキストを属性として切り出し
-        head_text, link_text, href, tail_text = (match.group(1), match.group(2), match.group(3), match.group(4))
+        head_text, link_text, href, tail_text = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2, 3, 4])
 
         return head_text, LinkInline(Link(href=href), link_text), tail_text
