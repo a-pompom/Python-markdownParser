@@ -16,7 +16,10 @@ def create_block(block_type: str, children: Children, **kwargs) -> Block:
     if block_type == 'heading':
         return HeadingBlock(Heading(size=kwargs['size']), children)
 
-    return PlainBlock(Plain(), children)
+    if block_type == '':
+        return PlainBlock(Plain(), children)
+
+    raise Exception('invalid block type')
 
 
 def create_inline(inline_type: str, text: str, **kwargs) -> Inline:
