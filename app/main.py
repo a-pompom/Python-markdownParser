@@ -3,7 +3,7 @@ import sys
 
 from app.markdown.parser import MarkdownParser
 from app.converter import Converter
-from app.html_builder import HtmlBuilder
+from app.html.builder import HtmlBuilder
 
 IN_AND_OUT_ARG_COUNT = 3
 
