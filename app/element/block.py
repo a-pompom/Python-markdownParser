@@ -15,6 +15,12 @@ class Block:
 
 
 @dataclasses.dataclass
+class ParseResult:
+    """ 変換結果を保持 """
+    content: list[Block]
+
+
+@dataclasses.dataclass
 class PlainBlock(Block):
     """ どの記法にも属さない要素 """
     style: Plain

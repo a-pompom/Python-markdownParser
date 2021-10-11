@@ -1,14 +1,6 @@
-import dataclasses
-
-from app.element.block import Block
+from app.element.block import ParseResult
 from app.markdown.block_parser import BlockParser
 from app.markdown.inline_parser import InlineParser
-
-
-@dataclasses.dataclass
-class ParseResult:
-    """ 変換結果を保持 """
-    content: list[Block]
 
 
 class MarkdownParser:
