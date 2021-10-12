@@ -1,6 +1,6 @@
 from app.regex import regex
-from app.element.inline import Inline, PlainInline, LinkInline
-from app.element.style import Plain, Link
+from app.element.inline import Inline, PlainInline, LinkInline, CodeInline
+from app.element.style import Plain, Link, Code
 
 
 class InlineParser:
@@ -8,7 +8,7 @@ class InlineParser:
 
     def __init__(self):
         # 各変換処理を表現する要素を初期化
-        self.parsers: list[IParser] = [LinkParser()]
+        self.parsers: list[IParser] = [LinkParser(), CodeParser()]
 
     def parse(self, text: str) -> list[Inline]:
         """
@@ -88,3 +88,25 @@ class LinkParser(IParser):
         head_text, link_text, href, tail_text = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2, 3, 4])
 
         return head_text, LinkInline(Link(href=href), link_text), tail_text
+
+
+class CodeParser(IParser):
+    """ コード要素の解釈を責務に持つ """
+
+    # ex) Pythonでは、コメントを`#`から始まる行で表現します
+    PATTERN = r'(.*)`(.*)`(.*)'
+
+    def is_target(self, markdown_text: str) -> bool:
+        return regex.contain(self.PATTERN, markdown_text)
+
+    def parse(self, markdown_text: str) -> tuple[str, Inline, str]:
+        """
+        コードを表すInline要素を生成
+
+        :param markdown_text: 処理対象文字列
+        :return: コードを表すInline要素
+        """
+
+        head_text, code_text, tail_text = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2, 3])
+
+        return head_text, CodeInline(Code(), code_text), tail_text
