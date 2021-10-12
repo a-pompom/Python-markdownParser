@@ -17,8 +17,14 @@ class TestMarkdownParser:
         (
                 ['## awesome heading'],
                 ParseResult([create_block('heading', [create_inline('', 'awesome heading')], size=2)])
-        )
-    ], ids=['plain', 'heading'])
+        ),
+        (
+                ['記号`!`は否定を表現します。'],
+                ParseResult([create_block(
+                    '', [create_inline('', '記号'), create_inline('code', '!'), create_inline('', 'は否定を表現します。')])]
+                )
+        ),
+    ], ids=['plain', 'heading', 'code'])
     def test_parse(self, lines: list[str], expected: ParseResult):
         # GIVEN
         sut = MarkdownParser()

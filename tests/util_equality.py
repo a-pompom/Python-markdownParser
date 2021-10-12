@@ -1,7 +1,7 @@
 from app.markdown.parser import ParseResult
 from app.element.block import Block, Children
 from app.element.inline import Inline
-from app.element.style import Style, Plain, Heading, Link
+from app.element.style import Style, Plain, Heading, Link, Code
 
 
 def assert_that_text_file_content_is_same(expected_path: str, actual_path: str):
@@ -175,5 +175,8 @@ def _equal_for_style(former: Style, latter: Style) -> bool:
     if isinstance(former, Link) and isinstance(latter, Link):
         print(f'Link comparison former: {former.href}, latter: {latter.href}')
         return former.href == latter.href
+
+    if isinstance(former, Code) and isinstance(latter, Code):
+        return True
 
     return True

@@ -1,6 +1,6 @@
 from app.element.block import Block, PlainBlock, HeadingBlock, Children
-from app.element.inline import Inline, PlainInline, LinkInline
-from app.element.style import Plain, Heading, Link
+from app.element.inline import Inline, PlainInline, LinkInline, CodeInline
+from app.element.style import Plain, Heading, Link, Code
 
 
 def create_block(block_type: str, children: Children, **kwargs) -> Block:
@@ -35,4 +35,10 @@ def create_inline(inline_type: str, text: str, **kwargs) -> Inline:
     if inline_type == 'link':
         return LinkInline(Link(href=kwargs['href']), text)
 
-    return PlainInline(Plain(), text)
+    if inline_type == 'code':
+        return CodeInline(Code(), text)
+
+    if inline_type == '':
+        return PlainInline(Plain(), text)
+
+    raise Exception('invalid inline type')
