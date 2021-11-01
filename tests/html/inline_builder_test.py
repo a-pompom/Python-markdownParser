@@ -1,7 +1,7 @@
 import pytest
 
-from app.element.inline import Inline, LinkInline, CodeInline
-from app.html.inline_builder import InlineBuilder, LinkBuilder, CodeBuilder
+from app.element.inline import Inline, LinkInline, CodeInline, ImageInline
+from app.html.inline_builder import InlineBuilder, LinkBuilder, CodeBuilder, ImageBuilder
 
 from tests.util_factory import create_inline
 
@@ -92,6 +92,43 @@ class TestCodeBuilder:
     def test_build(self, inline: CodeInline, expected: str):
         # GIVEN
         sut = CodeBuilder()
+        # WHEN
+        actual = sut.build(inline)
+        # THEN
+        assert actual == expected
+
+
+class TestImageBuilder:
+    """ ImageInline要素からimgタグと対応するHTML文字列が得られるか検証 """
+
+    # 対象判定
+    @pytest.mark.parametrize(('inline', 'expected'), [
+        (create_inline('image', '', src='image.png', alt='image'), True),
+        (create_inline('code', 'code text'), False)
+    ], ids=['target', 'not target'])
+    def test_target(self, inline: Inline, expected: bool):
+        # GIVEN
+        sut = ImageBuilder()
+        # WHEN
+        actual = sut.is_target(inline)
+        # THEN
+        assert actual == expected
+
+    # HTML組み立て
+    @pytest.mark.parametrize(('inline', 'expected'), [
+        (
+            create_inline('image', '', src='images/dog.png', alt='わんこ'),
+            '<img src="images/dog.png" alt="わんこ">'
+        ),
+        (
+            create_inline('image', '', src='http://localhost/image.png', alt='画像'),
+            '<img src="http://localhost/image.png" alt="画像">'
+        )
+
+    ], ids=['path_expression', 'url_expression'])
+    def test_build(self, inline: ImageInline, expected: str):
+        # GIVEN
+        sut = ImageBuilder()
         # WHEN
         actual = sut.build(inline)
         # THEN

@@ -24,7 +24,23 @@ class TestMarkdownParser:
                     '', [create_inline('', '記号'), create_inline('code', '!'), create_inline('', 'は否定を表現します。')])]
                 )
         ),
-    ], ids=['plain', 'heading', 'code'])
+        (
+                ['![image](https://avatars.githubusercontent.com/u/43694794?v=4)'],
+                ParseResult([
+                    create_block(
+                        '',
+                        [
+                            create_inline(
+                                'image',
+                                '',
+                                src='https://avatars.githubusercontent.com/u/43694794?v=4',
+                                alt='image'
+                            ),
+                        ]
+                    )]
+                )
+        ),
+    ], ids=['plain', 'heading', 'code', 'image'])
     def test_parse(self, lines: list[str], expected: ParseResult):
         # GIVEN
         sut = MarkdownParser()
