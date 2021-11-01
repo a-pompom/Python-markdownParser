@@ -1,11 +1,11 @@
-from app.element.inline import Inline, LinkInline, CodeInline
+from app.element.inline import Inline, LinkInline, CodeInline, ImageInline
 
 
 class InlineBuilder:
     """ Inline要素と対応するHTML文字列を組み立てることを責務に持つ """
 
     def __init__(self):
-        self._builders: list[IBuilder] = [LinkBuilder(), CodeBuilder()]
+        self._builders: list[IBuilder] = [LinkBuilder(), CodeBuilder(), ImageBuilder()]
 
     def build(self, inline: Inline) -> str:
         """
@@ -97,3 +97,31 @@ class CodeBuilder(IBuilder):
         )
 
         return code_tag
+
+
+class ImageBuilder(IBuilder):
+    """ imgタグで表現される画像要素を生成することを責務に持つ """
+
+    SRC_EXPRESSION = '{src}'
+    ALT_EXPRESSION = '{alt}'
+
+    TEMPLATE = f'<img src="{SRC_EXPRESSION}" alt="{ALT_EXPRESSION}">'
+
+    def is_target(self, inline: Inline) -> bool:
+        return isinstance(inline, ImageInline)
+
+    def build(self, inline: ImageInline) -> str:
+        """
+        imgタグ文字列を組み立て
+
+        :param inline: 処理対象Inline要素
+        :return: imgタグ文字列
+        """
+
+        img_tag = self.TEMPLATE.replace(
+            self.SRC_EXPRESSION, inline.style.src
+        ).replace(
+            self.ALT_EXPRESSION, inline.style.alt
+        )
+
+        return img_tag
