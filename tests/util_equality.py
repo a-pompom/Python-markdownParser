@@ -1,7 +1,7 @@
 from app.markdown.parser import ParseResult
 from app.element.block import Block, Children
 from app.element.inline import Inline
-from app.element.style import Style, Plain, Heading, Link, Code
+from app.element.style import Style, Plain, Heading, Link, Code, Image
 
 
 def assert_that_text_file_content_is_same(expected_path: str, actual_path: str):
@@ -168,15 +168,28 @@ def _equal_for_style(former: Style, latter: Style) -> bool:
     if isinstance(former, Plain):
         return True
 
+    # Block
+    # hタグ
     if isinstance(former, Heading) and isinstance(latter, Heading):
         print(f'Heading comparison former: {former.size}, latter: {latter.size}')
         return former.size == latter.size
 
+    # Inline
+    # aタグ
     if isinstance(former, Link) and isinstance(latter, Link):
         print(f'Link comparison former: {former.href}, latter: {latter.href}')
         return former.href == latter.href
 
+    # codeタグ
     if isinstance(former, Code) and isinstance(latter, Code):
         return True
+
+    # imgタグ
+    if isinstance(former, Image) and isinstance(latter, Image):
+        print('Image comparison')
+        print(f'former.src: {former.src}, latter.src: {latter.src}')
+        print(f'former.alt: {former.alt}, latter.alt: {latter.alt}')
+
+        return former.src == latter.src and former.alt == latter.alt
 
     return True
