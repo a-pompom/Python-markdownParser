@@ -20,3 +20,15 @@ class Heading(Style):
 class Link(Style):
     """ リンク要素を表現 """
     href: str
+
+
+@dataclasses.dataclass
+class Code(Style):
+    """ コード要素を表現 """
+
+
+@dataclasses.dataclass
+class Image(Style):
+    """ 画像要素を表現 """
+    src: str
+    alt: str

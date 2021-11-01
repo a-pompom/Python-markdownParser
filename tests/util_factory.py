@@ -1,6 +1,6 @@
 from app.element.block import Block, PlainBlock, HeadingBlock, Children
-from app.element.inline import Inline, PlainInline, LinkInline
-from app.element.style import Plain, Heading, Link
+from app.element.inline import Inline, PlainInline, LinkInline, CodeInline, ImageInline
+from app.element.style import Plain, Heading, Link, Code, Image
 
 
 def create_block(block_type: str, children: Children, **kwargs) -> Block:
@@ -32,7 +32,19 @@ def create_inline(inline_type: str, text: str, **kwargs) -> Inline:
     :return: 生成されたInline要素
     """
 
+    # aタグ
     if inline_type == 'link':
         return LinkInline(Link(href=kwargs['href']), text)
 
-    return PlainInline(Plain(), text)
+    # codeタグ
+    if inline_type == 'code':
+        return CodeInline(Code(), text)
+
+    # imgタグ
+    if inline_type == 'image':
+        return ImageInline(Image(src=kwargs['src'], alt=kwargs['alt']), '')
+
+    if inline_type == '':
+        return PlainInline(Plain(), text)
+
+    raise Exception('invalid inline type')

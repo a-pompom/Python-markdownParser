@@ -1,5 +1,5 @@
 import dataclasses
-from app.element.style import Style, Plain, Link
+from app.element.style import Style, Plain, Link, Code, Image
 
 
 @dataclasses.dataclass
@@ -19,3 +19,14 @@ class PlainInline(Inline):
 class LinkInline(Inline):
     """ aタグと対応するリンク要素を保持 """
     style: Link
+
+
+@dataclasses.dataclass
+class CodeInline(Inline):
+    """ codeタグと対応するコード要素を保持 """
+    style: Code
+
+
+class ImageInline(Inline):
+    """ imgタグと対応する画像要素を保持 """
+    style: Image
