@@ -20,6 +20,9 @@ class LinkInline(Inline):
     """ aタグと対応するリンク要素を保持 """
     style: Link
 
+    def __repr__(self):
+        return f'Link: text={self.text}, href={self.style.href}'
+
 
 @dataclasses.dataclass
 class CodeInline(Inline):

@@ -1,10 +1,26 @@
 import pytest
 
 from app.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser
-from app.element.inline import Inline, LinkInline, CodeInline, ImageInline
-from app.element.style import Link
+from app.element.inline import Inline, CodeInline, ImageInline
 from tests.util_equality import equal_for_inline_parse_result, equal_for_inline
 from tests.util_factory import create_inline
+
+
+def assert_for_inline_parse_result(actual: tuple[str, Inline, str], expected: tuple[str, str, str]):
+    """
+    Inline要素のパース結果に対するAssertion
+
+    :param actual: 実際に生成されたInline要素パース結果
+    :param expected: 期待結果
+    """
+
+    actual_head, actual_inline, actual_tail = actual
+    expected_head, expected_inline_repr, expected_tail = expected
+
+    assert actual_head == expected_head
+    # Inline要素は__repr__()により、文字列表現で比較
+    assert repr(actual_inline) == expected_inline_repr
+    assert actual_tail == expected_tail
 
 
 class TestInlineParser:
@@ -33,12 +49,15 @@ class TestLink:
     """ []()で表現されるリンク要素を検証 """
 
     # 記法が対象か
-    @pytest.mark.parametrize(('text', 'expected'), [
-        ('this is [link](url)', True),
-        ('this is not link', False),
-        ('[only link](http://www)', True),
-        ('![image](http://www)', False)
-    ], ids=['link text', 'not link', 'only link', 'image'])
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            ('this is [link](url)', True),
+            ('this is not link', False),
+            ('[only link](http://www)', True),
+            ('![image](http://www)', False)
+        ],
+        ids=['link text', 'not link', 'only link', 'image'])
     def test_target(self, text: str, expected: bool):
         sut = LinkParser()
         # WHEN
@@ -47,21 +66,34 @@ class TestLink:
         assert actual == expected
 
     # 記法を解釈
-    @pytest.mark.parametrize(('link_text', 'expected'), [
-        ('normal[link](url)text', ('normal', LinkInline(Link('url'), 'link'), 'text')),
-        ('[link](http)', ('', create_inline('link', 'link', href='http'), '')),
-        (
-                '# heading [head link](https) text',
-                ('# heading ', create_inline('link', 'head link', href='https'), ' text')
-        ),
-        ('not ! image [link](url)text', ('not ! image ', LinkInline(Link('url'), 'link'), 'text')),
-    ], ids=['normal link', 'only link', 'link with heading', 'not image'])
-    def test_parse(self, link_text: str, expected: tuple[str, LinkInline, str]):
+    @pytest.mark.parametrize(
+        ('link_text', 'expected'),
+        [
+            (
+                    'normal[link](url)text',
+                    ('normal', 'Link: text=link, href=url', 'text')
+            ),
+            (
+                    '[link](http)',
+                    ('', 'Link: text=link, href=http', '')
+            ),
+            (
+                    '# heading [head link](https) text',
+                    ('# heading ', 'Link: text=head link, href=https', ' text')
+            ),
+            (
+                    'not ! image [link](url)text',
+                    ('not ! image ', 'Link: text=link, href=url', 'text')
+            ),
+        ],
+        ids=['normal link', 'only link', 'link with heading', 'not image'])
+    def test_parse(self, link_text: str, expected: tuple[str, str, str]):
+        # GIVEN
         sut = LinkParser()
         # WHEN
         actual = sut.parse(link_text)
         # THEN
-        assert equal_for_inline_parse_result(actual, expected)
+        assert_for_inline_parse_result(actual, expected)
 
 
 class TestCode:
