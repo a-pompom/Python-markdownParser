@@ -1,36 +1,31 @@
 import pytest
 
-from app.element.inline import Inline, LinkInline, CodeInline, ImageInline
+from app.element.inline import Inline
 from app.html.inline_builder import InlineBuilder, LinkBuilder, CodeBuilder, ImageBuilder
+from app.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser
 
-from tests.util_factory import create_inline
 
+# TODO
+# パラメータ部分をInline型として、`ImageParser().parse('text')`の結果を渡せるようにしたい
 
 class TestInlineBuilder:
     """ Inline要素からHTML文字列が得られるか検証 """
 
     # HTML組み立て
-    @pytest.mark.parametrize(('inline', 'expected'), [
-        (create_inline('', 'plain text'), 'plain text'),
-        (
-            create_inline(
-                'link',
-                '参考リンク',
-                href='https://docs.python.org/3/'
-            ),
-            '<a href="https://docs.python.org/3/">参考リンク</a>'
-        ),
-        (
-            create_inline(
-                'code',
-                'DependencyInjection',
-            ),
-            '<code>DependencyInjection</code>'
-        ),
-    ], ids=['plain', 'link', 'code'])
-    def test_build(self, inline: Inline, expected: str):
+    @pytest.mark.parametrize(
+        ('inline_text', 'expected'),
+        [
+            ('plain text', 'plain text'),
+            ('[参考リンク](https://docs.python.org/3/)', '<a href="https://docs.python.org/3/">参考リンク</a>'),
+            ('![awesome image](image.png)', '<img src="image.png" alt="awesome image">'),
+            ('`DependencyInjection`', '<code>DependencyInjection</code>'),
+        ],
+        ids=['plain', 'link', 'image', 'code'])
+    def test_build(self, inline_text: str, expected: str):
         # GIVEN
         sut = InlineBuilder()
+        # TODO: パラメータ部分にて、各パーサでパースした結果を渡せるようにしたい
+        inline = InlineParser().parse(inline_text)[0]
         # WHEN
         actual = sut.build(inline)
         # THEN
@@ -41,27 +36,36 @@ class TestLinkBuilder:
     """ LinkInline要素からaタグと対応するHTML文字列が得られるか検証 """
 
     # 対象判定
-    @pytest.mark.parametrize(('inline', 'expected'), [
-        (create_inline('link', 'this is a link', href='url'), True),
-        (create_inline('', 'plain text'), False),
-        (create_inline('link', '参考リンク', href='https://www.google.com/'), True),
-    ], ids=['target', 'not target', 'normal link'])
-    def test_target(self, inline: Inline, expected: bool):
+    @pytest.mark.parametrize(
+        ('inline_text', 'expected'),
+        [
+            ('[this is a link](url)', True),
+            ('plain text', False),
+            ('[参考リンク](https://www.google.com/)', True)
+        ],
+        ids=['target', 'not target', 'normal link'])
+    def test_target(self, inline_text: str, expected: bool):
         # GIVEN
         sut = LinkBuilder()
+        inline = InlineParser().parse(inline_text)[0]
         # WHEN
         actual = sut.is_target(inline)
         # THEN
         assert actual == expected
 
     # HTML組み立て
-    @pytest.mark.parametrize(('inline', 'expected'), [
-        (create_inline('link', 'this is a link', href='url'), '<a href="url">this is a link</a>'),
-        (create_inline('link', '参考リンク', href='https://www.google.com/'), '<a href="https://www.google.com/">参考リンク</a>')
-    ], ids=['url', 'google'])
-    def test_build(self, inline: LinkInline, expected: str):
+    @pytest.mark.parametrize(
+        ('inline_text', 'expected'),
+        [
+            ('[this is a link](url)', '<a href="url">this is a link</a>'),
+            ('[参考リンク](https://www.google.com/)', '<a href="https://www.google.com/">参考リンク</a>')
+        ],
+        ids=['url', 'google'])
+    def test_build(self, inline_text: str, expected: str):
         # GIVEN
         sut = LinkBuilder()
+        inline = LinkParser().parse(inline_text)[1]
+
         # WHEN
         actual = sut.build(inline)
         # THEN
@@ -72,26 +76,32 @@ class TestCodeBuilder:
     """ CodeInline要素からcodeタグと対応するHTML文字列が得られるか検証 """
 
     # 対象判定
-    @pytest.mark.parametrize(('inline', 'expected'), [
-        (create_inline('code', 'マークダウンの`#`はヘッダを表します'), True),
-        (create_inline('link', 'this is a link', href='url'), False),
-    ], ids=['target', 'not target'])
-    def test_target(self, inline: Inline, expected: bool):
+    @pytest.mark.parametrize(
+        ('inline_text', 'expected'), [
+            ('`#`', True),
+            ('[this is a link](url)', False),
+        ],
+        ids=['target', 'not target'])
+    def test_target(self, inline_text: str, expected: bool):
         # GIVEN
         sut = CodeBuilder()
+        inline = InlineParser().parse(inline_text)[0]
         # WHEN
         actual = sut.is_target(inline)
         # THEN
         assert actual == expected
 
     # HTML組み立て
-    @pytest.mark.parametrize(('inline', 'expected'), [
-        (create_inline('code', 'plain text'), '<code>plain text</code>'),
-        (create_inline('code', 'codeタグ'), '<code>codeタグ</code>'),
-    ], ids=['plain', 'full width'])
-    def test_build(self, inline: CodeInline, expected: str):
+    @pytest.mark.parametrize(
+        ('inline_text', 'expected'), [
+            ('`plain text`', '<code>plain text</code>'),
+            ('`codeタグ`', '<code>codeタグ</code>'),
+        ],
+        ids=['plain', 'full width'])
+    def test_build(self, inline_text: str, expected: str):
         # GIVEN
         sut = CodeBuilder()
+        inline = CodeParser().parse(inline_text)[1]
         # WHEN
         actual = sut.build(inline)
         # THEN
@@ -102,10 +112,13 @@ class TestImageBuilder:
     """ ImageInline要素からimgタグと対応するHTML文字列が得られるか検証 """
 
     # 対象判定
-    @pytest.mark.parametrize(('inline', 'expected'), [
-        (create_inline('image', '', src='image.png', alt='image'), True),
-        (create_inline('code', 'code text'), False)
-    ], ids=['target', 'not target'])
+    @pytest.mark.parametrize(
+        ('inline', 'expected'),
+        [
+            (ImageParser().parse('![image](image.png)')[1], True),
+            (CodeParser().parse('`code text`')[1], False),
+        ],
+        ids=['target', 'not target'])
     def test_target(self, inline: Inline, expected: bool):
         # GIVEN
         sut = ImageBuilder()
@@ -115,20 +128,17 @@ class TestImageBuilder:
         assert actual == expected
 
     # HTML組み立て
-    @pytest.mark.parametrize(('inline', 'expected'), [
-        (
-            create_inline('image', '', src='images/dog.png', alt='わんこ'),
-            '<img src="images/dog.png" alt="わんこ">'
-        ),
-        (
-            create_inline('image', '', src='http://localhost/image.png', alt='画像'),
-            '<img src="http://localhost/image.png" alt="画像">'
-        )
-
-    ], ids=['path_expression', 'url_expression'])
-    def test_build(self, inline: ImageInline, expected: str):
+    @pytest.mark.parametrize(
+        ('inline_text', 'expected'),
+        [
+            ('![わんこ](images/dog.png)', '<img src="images/dog.png" alt="わんこ">'),
+            ('![画像](http://localhost/image.png)', '<img src="http://localhost/image.png" alt="画像">'),
+        ],
+        ids=['path_expression', 'url_expression'])
+    def test_build(self, inline_text, expected: str):
         # GIVEN
         sut = ImageBuilder()
+        inline = ImageParser().parse(inline_text)[1]
         # WHEN
         actual = sut.build(inline)
         # THEN
