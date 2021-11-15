@@ -175,8 +175,12 @@ class TestImage:
                     '最新の画像![画像](/画像.png)',
                     ('最新の画像', 'Image: src=/画像.png, alt=画像', '')
             ),
+            (
+                    '![画像](/画像.png)',
+                    ('', 'Image: src=/画像.png, alt=画像', '')
+            ),
         ],
-        ids=['head', 'both', 'tail'])
+        ids=['head', 'both', 'tail', 'inline_only'])
     def test_parse(self, text: str, expected: tuple[str, str, str]):
         # GIVEN
         sut = ImageParser()
