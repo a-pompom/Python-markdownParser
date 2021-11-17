@@ -1,12 +1,8 @@
 import pytest
 
-from app.element.inline import Inline
 from app.html.inline_builder import InlineBuilder, LinkBuilder, CodeBuilder, ImageBuilder
 from app.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser
 
-
-# TODO
-# パラメータ部分をInline型として、`ImageParser().parse('text')`の結果を渡せるようにしたい
 
 class TestInlineBuilder:
     """ Inline要素からHTML文字列が得られるか検証 """
@@ -24,7 +20,6 @@ class TestInlineBuilder:
     def test_build(self, inline_text: str, expected: str):
         # GIVEN
         sut = InlineBuilder()
-        # TODO: パラメータ部分にて、各パーサでパースした結果を渡せるようにしたい
         inline = InlineParser().parse(inline_text)[0]
         # WHEN
         actual = sut.build(inline)
@@ -64,7 +59,7 @@ class TestLinkBuilder:
     def test_build(self, inline_text: str, expected: str):
         # GIVEN
         sut = LinkBuilder()
-        inline = LinkParser().parse(inline_text)[1]
+        inline = LinkParser().parse(inline_text)
 
         # WHEN
         actual = sut.build(inline)
@@ -101,7 +96,7 @@ class TestCodeBuilder:
     def test_build(self, inline_text: str, expected: str):
         # GIVEN
         sut = CodeBuilder()
-        inline = CodeParser().parse(inline_text)[1]
+        inline = CodeParser().parse(inline_text)
         # WHEN
         actual = sut.build(inline)
         # THEN
@@ -113,15 +108,16 @@ class TestImageBuilder:
 
     # 対象判定
     @pytest.mark.parametrize(
-        ('inline', 'expected'),
+        ('inline_text', 'expected'),
         [
-            (ImageParser().parse('![image](image.png)')[1], True),
-            (CodeParser().parse('`code text`')[1], False),
+            ('![image](image.png)', True),
+            ('`code text`', False),
         ],
         ids=['target', 'not target'])
-    def test_target(self, inline: Inline, expected: bool):
+    def test_target(self, inline_text: str, expected: bool):
         # GIVEN
         sut = ImageBuilder()
+        inline = InlineParser().parse(inline_text)[0]
         # WHEN
         actual = sut.is_target(inline)
         # THEN
@@ -138,7 +134,7 @@ class TestImageBuilder:
     def test_build(self, inline_text, expected: str):
         # GIVEN
         sut = ImageBuilder()
-        inline = ImageParser().parse(inline_text)[1]
+        inline = ImageParser().parse(inline_text)
         # WHEN
         actual = sut.build(inline)
         # THEN
