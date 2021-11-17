@@ -1,7 +1,7 @@
 import pytest
 
 from app.html.block_builder import BlockBuilder, HeadingBuilder
-from app.markdown.block_parser import BlockParser
+from app.markdown.block_parser import BlockParser, HeadingParser
 from app.markdown.inline_parser import InlineParser
 
 
@@ -57,7 +57,7 @@ class TestHeadingBuilder:
     def test_build(self, block_text: str, child_text: str, expected: str):
         # THEN
         sut = HeadingBuilder()
-        block = BlockParser().parse(block_text, InlineParser().parse(child_text))
+        block = HeadingParser().parse(block_text, InlineParser().parse(child_text))
         # WHEN
         actual = sut.build(block, child_text)
         # THEN

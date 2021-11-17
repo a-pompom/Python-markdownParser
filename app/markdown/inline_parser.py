@@ -24,7 +24,8 @@ class InlineParser:
             # Inline要素が存在したとき、ただInline要素を抜き出すだけでは元のテキストのどの部分が対応していたか判別できない
             # 順序関係を維持し、複数のInline要素にも対応できるよう、前後の文字列も抜き出す
             if parser.is_target(text):
-                head, inline, tail = parser.parse(text)
+                head, inline_text, tail = parser.extract_text(text)
+                inline = parser.parse(inline_text)
 
                 # 前方
                 if head:
@@ -55,13 +56,23 @@ class IParser:
         """
         raise NotImplementedError()
 
-    def parse(self, markdown_text: str) -> tuple[str, Inline, str]:
+    def extract_text(self, markdown_text: str) -> tuple[str, str, str]:
         """
-        マークダウンの行を解釈し、種類に応じたInline要素を生成 Inline要素と前後の文字列を返却\n
-        たとえば、`this is [link](address) text`の場合、['this is', Inline, 'text']となる\n
-        こうすることで、解釈結果と元のテキストで順序関係を保つことができる
+        マークダウンの行を解釈し、Inline要素文字列と、前後の文字列を返却\n
+        たとえば、`this is [link](address) text`の場合、['this is', '[link](address)', 'text']となる\n
+        このように分離していくことで、解釈結果と元のテキストで順序関係を保つことができる
 
-        :param markdown_text: マークダウンの文字列
+        :param markdown_text: 分離対象文字列
+        :return: 先頭, Inline要素文字列, 末尾を格納したタプル
+        """
+        raise NotImplementedError()
+
+    def parse(self, inline_text: str) -> Inline:
+        """
+        Inline要素の記法で書かれた文字列をもとに、Inline要素を生成\n
+        分離処理と分けておくことで、テストコードで独立して扱うことができる
+
+        :param inline_text: 解釈対象となるInline要素文字列
         :return 変換結果
         """
         raise NotImplementedError()
@@ -72,12 +83,17 @@ class LinkParser(IParser):
 
     # imgタグの記法はリンク要素と共通しているため、除外するためのパターンを設定
     # ex) マークダウンの[Wikipedia](https://en.wikipedia.org/wiki/Markdown)へのリンクです
-    PATTERN = r'(.*)(?<!!)\[(.*)\]\((.*)\)(.*)'
+    PATTERN = r'\[(.*)\]\((.*)\)'
+    EXTRACT_PATTERN = r'(.*)(?<!!)(\[.*\]\(.*\))(.*)'
 
     def is_target(self, markdown_text: str) -> bool:
-        return regex.contain(self.PATTERN, markdown_text)
+        return regex.contain(self.EXTRACT_PATTERN, markdown_text)
 
-    def parse(self, markdown_text: str) -> tuple[str, Inline, str]:
+    def extract_text(self, markdown_text: str) -> tuple[str, str, str]:
+        head, inline, tail = regex.extract_from_group(self.EXTRACT_PATTERN, markdown_text, [1, 2, 3])
+        return head, inline, tail
+
+    def parse(self, markdown_text: str) -> LinkInline:
         """
         リンクを表すInline要素を生成
 
@@ -86,21 +102,26 @@ class LinkParser(IParser):
         """
 
         # 遷移先URL・リンクテキストを属性として切り出し
-        head_text, link_text, href, tail_text = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2, 3, 4])
+        link_text, href = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2])
 
-        return head_text, LinkInline(Link(href=href), link_text), tail_text
+        return LinkInline(Link(href=href), link_text)
 
 
 class CodeParser(IParser):
     """ コード要素の解釈を責務に持つ """
 
     # ex) Pythonでは、コメントを`#`から始まる行で表現します
-    PATTERN = r'(.*)`(.*)`(.*)'
+    PATTERN = r'`(.*)`'
+    EXTRACT_PATTERN = r'(.*)(`.*`)(.*)'
 
     def is_target(self, markdown_text: str) -> bool:
-        return regex.contain(self.PATTERN, markdown_text)
+        return regex.contain(self.EXTRACT_PATTERN, markdown_text)
 
-    def parse(self, markdown_text: str) -> tuple[str, Inline, str]:
+    def extract_text(self, markdown_text: str) -> tuple[str, str, str]:
+        head, inline, tail = regex.extract_from_group(self.EXTRACT_PATTERN, markdown_text, [1, 2, 3])
+        return head, inline, tail
+
+    def parse(self, markdown_text: str) -> CodeInline:
         """
         コードを表すInline要素を生成
 
@@ -108,21 +129,26 @@ class CodeParser(IParser):
         :return: コードを表すInline要素
         """
 
-        head_text, code_text, tail_text = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2, 3])
+        code_text = regex.extract_from_group(self.PATTERN, markdown_text, [1])
 
-        return head_text, CodeInline(Code(), code_text), tail_text
+        return CodeInline(Code(), code_text)
 
 
 class ImageParser(IParser):
     """ 画像要素の解釈を責務に持つ """
 
     # ex) this ![amazing image](url) is awesome.
-    PATTERN = r'(.*)!\[(.*)\]\((.*)\)(.*)'
+    PATTERN = r'!\[(.*)\]\((.*)\)'
+    EXTRACT_PATTERN = r'(.*)(!\[.*\]\(.*\))(.*)'
 
     def is_target(self, markdown_text: str) -> bool:
-        return regex.contain(self.PATTERN, markdown_text)
+        return regex.contain(self.EXTRACT_PATTERN, markdown_text)
 
-    def parse(self, markdown_text: str) -> tuple[str, Inline, str]:
+    def extract_text(self, markdown_text: str) -> tuple[str, str, str]:
+        head, inline, tail = regex.extract_from_group(self.EXTRACT_PATTERN, markdown_text, [1, 2, 3])
+        return head, inline, tail
+
+    def parse(self, markdown_text: str) -> ImageInline:
         """
         画像を表すInline要素を生成
 
@@ -130,7 +156,7 @@ class ImageParser(IParser):
         :return: 画像を表すInline要素
         """
 
-        head_text, alt, src, tail_text = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2, 3, 4])
+        alt, src = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2])
 
         # imgタグは子要素のテキストを持たない
-        return head_text, ImageInline(Image(src=src, alt=alt), ''), tail_text
+        return ImageInline(Image(src=src, alt=alt), '')
