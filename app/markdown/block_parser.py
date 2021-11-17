@@ -113,7 +113,7 @@ class HeadingParser(IParser):
     def extract_text(self, markdown_text: str) -> str:
         return exclude_block_notation(self.PATTERN, markdown_text)
 
-    def parse(self, markdown_text: str, children: Children) -> Block:
+    def parse(self, markdown_text: str, children: Children) -> HeadingBlock:
         """
         ヘッダ行を解釈
 
