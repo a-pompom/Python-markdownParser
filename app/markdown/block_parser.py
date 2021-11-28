@@ -1,6 +1,6 @@
 from app.regex import regex
-from app.element.style import Plain, Heading
-from app.element.block import Children, Block, PlainBlock, HeadingBlock
+from app.element.style import Plain, Heading, BlockQuote
+from app.element.block import Children, Block, PlainBlock, HeadingBlock, QuoteBlock
 
 # 正規表現のグループのうち、Blockの記法に属さない箇所のインデックス
 # Inlineを解釈する処理をBlockとは独立させるために利用
@@ -37,7 +37,7 @@ class BlockParser:
     """ Block要素と対応するマークダウンの記法を解釈することを責務に持つ """
 
     def __init__(self):
-        self.parsers: list[IParser] = [HeadingParser()]
+        self.parsers: list[IParser] = [HeadingParser(), QuoteParser()]
 
     def extract_inline_text(self, markdown_text: str) -> str:
         """
@@ -125,3 +125,24 @@ class HeadingParser(IParser):
         heading_style, text = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2])
 
         return HeadingBlock(Heading(size=len(heading_style)), children)
+
+
+class QuoteParser(IParser):
+    """ 引用要素の解釈を責務に持つ """
+    PATTERN = r'(>) (.*)'
+
+    def is_target(self, markdown_text: str) -> bool:
+        return contain_block_notation(self.PATTERN, markdown_text)
+
+    def extract_text(self, markdown_text: str) -> str:
+        return exclude_block_notation(self.PATTERN, markdown_text)
+
+    def parse(self, markdown_text: str, children: Children) -> QuoteBlock:
+        """
+        引用行を解釈
+
+        :param markdown_text: 処理対象行
+        :param children: Inlineパーサによって解釈された要素の集まり
+        :return: 引用を表すBlock要素
+        """
+        return QuoteBlock(BlockQuote(), children)
