@@ -1,7 +1,7 @@
 import pytest
 
-from app.html.block_builder import BlockBuilder, HeadingBuilder
-from app.markdown.block_parser import BlockParser, HeadingParser
+from app.html.block_builder import BlockBuilder, HeadingBuilder, QuoteBuilder
+from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser
 from app.markdown.inline_parser import InlineParser
 
 
@@ -14,8 +14,9 @@ class TestBlockBuilder:
         [
             ('plain text', 'plain text', 'plain text'),
             ('# 概要', '概要', '<h1>概要</h1>'),
+            ('> と言いました', 'と言いました', '<blockquote>と言いました</blockquote>')
         ],
-        ids=['plain', 'heading'])
+        ids=['plain', 'heading', 'quote'])
     def test_build(self, block_text: str, child_text: str, expected: str):
         # GIVEN
         sut = BlockBuilder()
@@ -58,6 +59,43 @@ class TestHeadingBuilder:
         # THEN
         sut = HeadingBuilder()
         block = HeadingParser().parse(block_text, InlineParser().parse(child_text))
+        # WHEN
+        actual = sut.build(block, child_text)
+        # THEN
+        assert actual == expected
+
+
+class TestQuoteBuilder:
+    """ blockquoteタグ文字列の組み立てを検証 """
+
+    @pytest.mark.parametrize(
+        ('block_text', 'child_text', 'expected'),
+        [
+            ('> これは引用です', 'これは引用です', True),
+            ('[参考](url)', '[参考](url)', False)
+        ],
+        ids=['target', 'not target']
+    )
+    def test_is_target(self, block_text: str, child_text: str, expected: bool):
+        # GIVEN
+        sut = QuoteBuilder()
+        block = BlockParser().parse(block_text, InlineParser().parse(child_text))
+        # WHEN
+        actual = sut.is_target(block)
+        # THEN
+        assert actual == expected
+
+    @pytest.mark.parametrize(
+        ('block_text', 'child_text', 'expected'),
+        [
+            ('> それが問題です', 'それが問題です', '<blockquote>それが問題です</blockquote>')
+        ],
+        ids=['quote']
+    )
+    def test_build(self, block_text: str, child_text: str, expected: str):
+        # GIVEN
+        sut = QuoteBuilder()
+        block = QuoteParser().parse(block_text, InlineParser().parse(child_text))
         # WHEN
         actual = sut.build(block, child_text)
         # THEN

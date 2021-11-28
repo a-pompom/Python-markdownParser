@@ -19,6 +19,10 @@ class TestMarkdownParser:
                     '[Heading: size=2 | Child of Heading -> Plain: text=awesome heading]'
             ),
             (
+                    ['> amazing quote text'],
+                    '[Quote: | Child of Quote -> Plain: text=amazing quote text]'
+            ),
+            (
                     ['記号`!`は否定を表現します。'],
                     ('[Plain: | '
                      'Child of Plain -> Plain: text=記号 | '
@@ -31,7 +35,7 @@ class TestMarkdownParser:
                      'Child of Plain -> Image: src=https://avatars.githubusercontent.com/u/43694794?v=4, alt=image]')
             ),
         ],
-        ids=['plain', 'heading', 'code', 'image'])
+        ids=['plain', 'heading', 'quote', 'code', 'image'])
     def test_parse(self, lines: list[str], expected: str):
         # GIVEN
         sut = MarkdownParser()

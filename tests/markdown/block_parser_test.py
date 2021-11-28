@@ -1,7 +1,7 @@
 import pytest
 
 from app.markdown.inline_parser import InlineParser
-from app.markdown.block_parser import BlockParser, HeadingParser
+from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser
 
 
 class TestBlockParser:
@@ -36,9 +36,14 @@ class TestBlockParser:
                     '## awesome heading',
                     'awesome heading',
                     '[Heading: size=2 | Child of Heading -> Plain: text=awesome heading]'
-            )
+            ),
+            (
+                    '> this is a pen.',
+                    'this is a pen.',
+                    '[Quote:  | Child of Quote -> Plain: text=this is a pen.]'
+            ),
         ],
-        ids=['plain', 'heading'])
+        ids=['plain', 'heading', 'quote'])
     def test_parse(self, text: str, child_text: str, expected: str):
         # GIVEN
         sut = BlockParser()
@@ -103,5 +108,72 @@ class TestHeading:
         children = inline_parser.parse(child_text)
         actual = sut.parse(heading_text, children)
 
+        # THEN
+        assert repr(actual) == expected
+
+
+class TestQuote:
+    """ >で表現される引用要素 """
+
+    # 記法が対象か
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            ('> なんかいい感じの引用', True),
+            ('>no space', False),
+            ('plain text', False),
+
+        ],
+        ids=['target', 'no space', 'plain text']
+    )
+    def test_target(self, text: str, expected: bool):
+        # GIVEN
+        sut = QuoteParser()
+        # WHEN
+        actual = sut.is_target(text)
+        # THEN
+        assert actual == expected
+
+    # 記法に関連しないテキストの切り出し
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            ('> Quote text', 'Quote text'),
+            ('> なんかいい感じの発言', 'なんかいい感じの発言'),
+
+        ],
+        ids=['text', 'full width text']
+    )
+    def test_extract(self, text: str, expected: str):
+        # GIVEN
+        sut = QuoteParser()
+        # WHEN
+        actual = sut.extract_text(text)
+        # THEN
+        assert actual == expected
+
+    # 記法の解釈
+    @pytest.mark.parametrize(
+        ('text', 'child_text', 'expected'),
+        [
+            (
+                    '> awesome text',
+                    'awesome text',
+                    '[Quote: | Child of Quote -> Plain: text=awesome text]'
+            ),
+            (
+                    '> すごい発言',
+                    'すごい発言',
+                    '[Quote: | Child of Quote -> Plain: text=すごい発言]'
+            ),
+        ],
+        ids=['normal text', 'full width text']
+    )
+    def test_parse(self, text: str, child_text: str, expected: str):
+        # GIVEN
+        sut = QuoteParser()
+        inline_parser = InlineParser()
+        # WHEN
+        actual = sut.parse(text, inline_parser.parse(child_text))
         # THEN
         assert repr(actual) == expected
