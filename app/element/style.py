@@ -17,6 +17,11 @@ class Heading(Style):
 
 
 @dataclasses.dataclass
+class BlockQuote(Style):
+    """ 引用要素を表現 """
+
+
+@dataclasses.dataclass
 class Link(Style):
     """ リンク要素を表現 """
     href: str

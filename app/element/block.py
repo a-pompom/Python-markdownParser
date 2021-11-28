@@ -1,8 +1,7 @@
 import dataclasses
-from functools import reduce
 from typing import Union
 
-from app.element.style import Style, Plain, Heading
+from app.element.style import Style, Plain, Heading, BlockQuote
 from app.element.inline import Inline
 
 Children = list[Union[Inline, 'Block']]
@@ -27,7 +26,7 @@ def create_repr_children(block_name: str, children: Children) -> str:
 
         # Block要素はBlockをreprで評価した結果が子要素となる
         if isinstance(child, Block):
-            repr_children += repr(child)
+            repr_children.append(f'Child of {block_name} -> {repr(child)}')
 
     return ' | '.join(repr_children)
 
@@ -66,3 +65,12 @@ class HeadingBlock(Block):
     def __repr__(self):
         child_repr_text = create_repr_children('Heading', self.children)
         return f'[Heading: size={self.style.size}{child_repr_text}]'
+
+
+class QuoteBlock(Block):
+    """ 引用要素 """
+    style: BlockQuote
+
+    def __repr__(self):
+        child_repr_text = create_repr_children('Quote', self.children)
+        return f'[Quote:{child_repr_text}]'

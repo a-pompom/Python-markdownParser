@@ -1,11 +1,11 @@
-from app.element.block import Block, HeadingBlock
+from app.element.block import Block, HeadingBlock, QuoteBlock
 
 
 class BlockBuilder:
     """ Block要素をもとに対応するHTML文字列を組み立てることを責務に持つ"""
 
     def __init__(self):
-        self._builders: list[IBuilder] = [HeadingBuilder()]
+        self._builders: list[IBuilder] = [HeadingBuilder(), QuoteBuilder()]
 
     def build(self, block: Block, child_text: str) -> str:
         """
@@ -76,3 +76,29 @@ class HeadingBuilder(IBuilder):
         )
 
         return heading
+
+
+class QuoteBuilder(IBuilder):
+    """ blockquote(引用)タグの組み立てを責務に持つ """
+
+    TEXT_EXPRESSION = '{text}'
+    TEMPLATE = f'<blockquote>{TEXT_EXPRESSION}</blockquote>'
+
+    def is_target(self, block: Block) -> bool:
+        return isinstance(block, QuoteBlock)
+
+    def build(self, block: QuoteBlock, child_text: str) -> str:
+        """
+        引用要素のHTML文字列を組み立て
+
+        :param block: 組み立て元Block要素
+        :param child_text: 子要素文字列
+        :return: HTMLのblockquoteタグを含む文字列
+        """
+
+        # <blockquote>text</blockquote>
+        blockquote = self.TEMPLATE.replace(
+            self.TEXT_EXPRESSION, child_text
+        )
+
+        return blockquote
