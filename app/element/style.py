@@ -22,6 +22,16 @@ class BlockQuote(Style):
 
 
 @dataclasses.dataclass
+class ListStyle(Style):
+    """ リスト要素を表現 """
+
+
+@dataclasses.dataclass
+class ListItem(Style):
+    """ リストの子要素を表現 """
+
+
+@dataclasses.dataclass
 class Link(Style):
     """ リンク要素を表現 """
     href: str

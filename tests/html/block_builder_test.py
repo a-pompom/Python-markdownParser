@@ -1,8 +1,10 @@
 import pytest
 
-from app.html.block_builder import BlockBuilder, HeadingBuilder, QuoteBuilder
-from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser
+from app.html.block_builder import BlockBuilder, HeadingBuilder, QuoteBuilder, ListBuilder, ListItemBuilder
+from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser
 from app.markdown.inline_parser import InlineParser
+
+from tests.factory.block_factory import ListItemFactory
 
 
 class TestBlockBuilder:
@@ -96,6 +98,91 @@ class TestQuoteBuilder:
         # GIVEN
         sut = QuoteBuilder()
         block = QuoteParser().parse(block_text, InlineParser().parse(child_text))
+        # WHEN
+        actual = sut.build(block, child_text)
+        # THEN
+        assert actual == expected
+
+
+class TestListBuilder:
+    """ ulタグ文字列要素の組み立て """
+
+    # 対象判定
+    @pytest.mark.parametrize(
+        ('block_text', 'child_text', 'expected'),
+        [
+            ('* task1', 'task1', True),
+            ('やること', 'やること', False),
+        ],
+        ids=['target', 'not target']
+    )
+    def test_is_target(self, block_text: str, child_text: str, expected: bool):
+        sut = ListBuilder()
+        block = BlockParser().parse(block_text, InlineParser().parse(child_text))
+        # WHEN
+        actual = sut.is_target(block)
+        # THEN
+        assert actual == expected
+
+    # ビルド結果
+    @pytest.mark.parametrize(
+        ('block_text', 'child_text', 'expected'),
+        [
+            ('- no.1', 'no.1', '<ul>no.1</ul>')
+        ],
+        ids=['list']
+    )
+    def test_build(self, block_text: str, child_text: str, expected: str):
+        # GIVEN
+        sut = ListBuilder()
+        block = ListParser().parse(block_text, InlineParser().parse(child_text))
+        # WHEN
+        actual = sut.build(block, child_text)
+        # THEN
+        assert actual == expected
+
+
+class TestListItemBuilder:
+    """ liタグ文字列要素の組み立て """
+
+    # ビルド対象
+    @pytest.mark.parametrize(
+        'child_text',
+        ['最初の要素']
+    )
+    def test_is_target_not_list_item(self, child_text: str):
+        sut = ListItemBuilder()
+        block = ListItemFactory().create_single_list_item(child_text)
+        # WHEN
+        actual = sut.is_target(block)
+        # THEN
+        assert actual is True
+
+    # ビルド対象でない
+    @pytest.mark.parametrize(
+        ('block_text', 'child_text'),
+        [('* 1st element', '1st element')]
+    )
+    def test_is_target_not_list_item(self, block_text: str, child_text: str):
+        sut = ListItemBuilder()
+        block = BlockParser().parse(block_text, InlineParser().parse(child_text))
+        # WHEN
+        actual = sut.is_target(block)
+        # THEN
+        assert actual is False
+
+    # ビルド結果
+    @pytest.mark.parametrize(
+        ('child_text', 'expected'),
+        [
+            ('やりたいことその1', '<li>やりたいことその1</li>')
+        ],
+        ids=['list item']
+    )
+    def test_build(self, child_text: str, expected: str):
+        # GIVEN
+        sut = ListItemBuilder()
+        block = ListItemFactory().create_single_list_item(child_text)
         # WHEN
         actual = sut.build(block, child_text)
         # THEN

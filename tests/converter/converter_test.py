@@ -31,7 +31,7 @@ class TestConverter:
               '[Plain: | Child of Plain -> Plain: text=再開]]'))
 
         ],
-        ids=['no convert', 'only quote', 'mixed']
+        ids=['no convert', 'only one type element', 'mixed']
     )
     def test_convert(self, lines: list[str], expected: str):
         # GIVEN

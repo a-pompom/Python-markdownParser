@@ -1,11 +1,11 @@
-from app.element.block import Block, HeadingBlock, QuoteBlock
+from app.element.block import Block, HeadingBlock, QuoteBlock, ListBlock, ListItemBlock
 
 
 class BlockBuilder:
     """ Block要素をもとに対応するHTML文字列を組み立てることを責務に持つ"""
 
     def __init__(self):
-        self._builders: list[IBuilder] = [HeadingBuilder(), QuoteBuilder()]
+        self._builders: list[IBuilder] = [HeadingBuilder(), QuoteBuilder(), ListItemBuilder(), ListBuilder()]
 
     def build(self, block: Block, child_text: str) -> str:
         """
@@ -102,3 +102,56 @@ class QuoteBuilder(IBuilder):
         )
 
         return blockquote
+
+
+class ListBuilder(IBuilder):
+    """ ul(リスト)タグの組み立てを責務に持つ """
+
+    TEXT_EXPRESSION = '{text}'
+    TEMPLATE = f'<ul>{TEXT_EXPRESSION}</ul>'
+
+    def is_target(self, block: Block) -> bool:
+        return isinstance(block, ListBlock)
+
+    def build(self, block: ListBlock, child_text: str) -> str:
+        """
+        リスト要素のHTML文字列を組み立て\n
+        子要素liの組み立てはListItemBuilderへ委譲
+
+        :param block: 組み立て元Block要素
+        :param child_text: 子要素文字列
+        :return: HTMLのulタグを含む文字列
+        """
+
+        # <ul>text</ul>
+        unordered_list = self.TEMPLATE.replace(
+            self.TEXT_EXPRESSION, child_text
+        )
+
+        return unordered_list
+
+
+class ListItemBuilder(IBuilder):
+    """ li(リスト子要素)タグの組み立てを責務に持つ """
+
+    TEXT_EXPRESSION = '{text}'
+    TEMPLATE = f'<li>{TEXT_EXPRESSION}</li>'
+
+    def is_target(self, block: Block) -> bool:
+        return isinstance(block, ListItemBlock)
+
+    def build(self, block: ListItemBlock, child_text: str) -> str:
+        """
+        リスト子要素のHTML文字列を組み立て
+
+        :param block: 組み立て元Block要素
+        :param child_text: 子要素文字列
+        :return: HTMLのliタグを含む文字列
+        """
+
+        # <li>text</li>
+        list_item = self.TEMPLATE.replace(
+            self.TEXT_EXPRESSION, child_text
+        )
+
+        return list_item
