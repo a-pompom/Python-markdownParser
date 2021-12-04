@@ -1,13 +1,13 @@
 from typing import TypeGuard
-from app.element.block import Block, PlainBlock, QuoteBlock
-from app.element.style import Plain, BlockQuote
+from app.element.block import Block, PlainBlock, QuoteBlock, ListBlock, ListItemBlock
+from app.element.style import Plain, BlockQuote, ListStyle, ListItem
 
 
 class BlockConverter:
     """ 同種のBlock要素の集まりをHTMLと対応した形へ変換することを責務に持つ """
 
     def __init__(self):
-        self._converter_list = [QuoteConverter()]
+        self._converter_list = [QuoteConverter(), ListConverter()]
 
     def convert(self, blocks: list[Block]) -> list[Block]:
         """
@@ -58,6 +58,17 @@ class QuoteConverter(IConverter):
         return all([isinstance(block, QuoteBlock) for block in blocks])
 
     def convert(self, blocks: list[QuoteBlock]) -> QuoteBlock:
-
         children = [PlainBlock(Plain(), block.children) for block in blocks]
         return QuoteBlock(BlockQuote(), children=children)
+
+
+class ListConverter(IConverter):
+    """ リスト要素を組み立てることを責務に持つ """
+
+    def is_target(self, blocks: list[Block]) -> TypeGuard[list[ListBlock]]:
+        return all([isinstance(block, ListBlock) for block in blocks])
+
+    def convert(self, blocks: list[ListBlock]) -> ListBlock:
+        # リストの子要素はliへ対応させるため、変換
+        children = [ListItemBlock(ListItem(), block.children) for block in blocks]
+        return ListBlock(ListStyle(), children=children)

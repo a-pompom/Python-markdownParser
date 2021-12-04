@@ -1,7 +1,7 @@
 import dataclasses
 from typing import Union
 
-from app.element.style import Style, Plain, Heading, BlockQuote
+from app.element.style import Style, Plain, Heading, BlockQuote, ListStyle, ListItem
 from app.element.inline import Inline
 
 Children = list[Union[Inline, 'Block']]
@@ -74,3 +74,21 @@ class QuoteBlock(Block):
     def __repr__(self):
         child_repr_text = create_repr_children('Quote', self.children)
         return f'[Quote:{child_repr_text}]'
+
+
+class ListBlock(Block):
+    """ リスト要素 """
+    style: ListStyle
+
+    def __repr__(self):
+        child_repr_text = create_repr_children('List', self.children)
+        return f'[List:{child_repr_text}]'
+
+
+class ListItemBlock(Block):
+    """ リスト子要素 """
+    style: ListItem
+
+    def __repr__(self):
+        child_repr_text = create_repr_children('ListItem', self.children)
+        return f'[ListItem:{child_repr_text}]'
