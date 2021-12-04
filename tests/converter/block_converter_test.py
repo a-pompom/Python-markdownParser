@@ -1,6 +1,6 @@
 import pytest
 
-from app.converter.block_converter import BlockConverter, QuoteConverter
+from app.converter.block_converter import BlockConverter, QuoteConverter, ListConverter
 from app.markdown.parser import MarkdownParser
 
 
@@ -19,13 +19,22 @@ class TestBlockConverter:
             (['今日はいい天気です。', '日記を終わります。'],
              ('[[Plain: | Child of Plain -> Plain: text=今日はいい天気です。], '
               '[Plain: | Child of Plain -> Plain: text=日記を終わります。]]')),
+
             (['> いい感じの言葉を', '> 引用します。'],
              ('[[Quote: | Child of Quote -> '
               '[Plain: | Child of Plain -> Plain: text=いい感じの言葉を]'
               ' | Child of Quote -> '
-              '[Plain: | Child of Plain -> Plain: text=引用します。]]]'))
+              '[Plain: | Child of Plain -> Plain: text=引用します。]]]')),
+
+            (['* 1st', '* 2nd', '* 3rd'],
+             ('[[List: | Child of List -> '
+              '[ListItem: | Child of ListItem -> Plain: text=1st]'
+              ' | Child of List -> '
+              '[ListItem: | Child of ListItem -> Plain: text=2nd]'
+              ' | Child of List -> '
+              '[ListItem: | Child of ListItem -> Plain: text=3rd]]]')),
         ],
-        ids=['plain', 'quote']
+        ids=['plain', 'quote', 'list']
     )
     def test_convert(self, lines: list[str], expected: str):
         # GIVEN
@@ -85,3 +94,54 @@ class TestQuoteConverter:
         actual = sut.convert(markdown_result.content)
         # THEN
         assert repr(actual) == expected
+
+
+class TestListConverter:
+    """ リスト要素のコンバータ """
+
+    # Block要素群が変換対象か
+    @pytest.mark.parametrize(
+        ('lines', 'expected'),
+        [
+            (['* 1st element', '* 2nd element'], True),
+            (['# Heading', 'Paragraph'], False),
+        ],
+        ids=['target', 'not target']
+    )
+    def test_is_target(self, lines: list[str], expected: bool):
+        # GIVEN
+        sut = ListConverter()
+        markdown_result = MarkdownParser().parse(lines)
+        # WHEN
+        actual = sut.is_target(markdown_result.content)
+        # THEN
+        assert actual == expected
+
+    # リスト・リスト子要素へ変換
+    @pytest.mark.parametrize(
+        ('lines', 'expected'),
+        [
+            (['- method1'], '[List: | Child of List -> [ListItem: | Child of ListItem -> Plain: text=method1]]'),
+            (['* item1', '* item2'],
+             ('[List: | Child of List -> '
+              '[ListItem: | Child of ListItem -> Plain: text=item1] | Child of List -> '
+              '[ListItem: | Child of ListItem -> Plain: text=item2]]')
+             ),
+        ],
+        ids=['single', 'multiple']
+    )
+    def test_convert(self, lines: list[str], expected: str):
+        sut = ListConverter()
+        markdown_result = MarkdownParser().parse(lines)
+
+        if not sut.is_target(markdown_result.content):
+            assert False
+
+        # WHEN
+        # 「Python3.10-dev, PyCharm2021.2」の段階ではリストに対する型ガードが
+        # 有効にならないようなので、型チェックを無効化
+        # noinspection PyTypeChecker
+        actual = sut.convert(markdown_result.content)
+        # THEN
+        assert repr(actual) == expected
+

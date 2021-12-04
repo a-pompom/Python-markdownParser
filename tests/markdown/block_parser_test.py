@@ -1,7 +1,7 @@
 import pytest
 
 from app.markdown.inline_parser import InlineParser
-from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser
+from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser
 
 
 class TestBlockParser:
@@ -40,10 +40,15 @@ class TestBlockParser:
             (
                     '> this is a pen.',
                     'this is a pen.',
-                    '[Quote:  | Child of Quote -> Plain: text=this is a pen.]'
+                    '[Quote: | Child of Quote -> Plain: text=this is a pen.]'
+            ),
+            (
+                    '* 手順その1',
+                    '手順その1',
+                    '[List: | Child of List -> Plain: text=手順その1]'
             ),
         ],
-        ids=['plain', 'heading', 'quote'])
+        ids=['plain', 'heading', 'quote', 'list'])
     def test_parse(self, text: str, child_text: str, expected: str):
         # GIVEN
         sut = BlockParser()
@@ -175,5 +180,62 @@ class TestQuote:
         inline_parser = InlineParser()
         # WHEN
         actual = sut.parse(text, inline_parser.parse(child_text))
+        # THEN
+        assert repr(actual) == expected
+
+
+class TestList:
+    """ */- で表現されるリスト要素 """
+
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            ('* 1つ目', True),
+            ('- その1', True),
+            ('Plain text', False)
+        ],
+        ids=['target *', 'target -', 'not target']
+    )
+    def test_is_target(self, text: str, expected: bool):
+        # GIVEN
+        sut = ListParser()
+        # WHEN
+        actual = sut.is_target(text)
+        # THEN
+        assert actual == expected
+
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            ('* first thing', 'first thing'),
+            ('- awesome list', 'awesome list'),
+            ('* 1つ目の理由', '1つ目の理由')
+
+        ],
+        ids=['* text', '- text', 'full width text']
+    )
+    def test_extract_text(self, text: str, expected: str):
+        # GIVEN
+        sut = ListParser()
+        # WHEN
+        actual = sut.extract_text(text)
+        # THEN
+        assert actual == expected
+
+    @pytest.mark.parametrize(
+        ('text', 'child_text', 'expected'),
+        [
+            ('* first of all', 'first of all', '[List: | Child of List -> Plain: text=first of all]'),
+            ('- 1st', '1st', '[List: | Child of List -> Plain: text=1st]'),
+            ('- 最初', '最初', '[List: | Child of List -> Plain: text=最初]'),
+        ],
+        ids=['* list', '- list', 'full width list']
+    )
+    def test_parse(self, text: str, child_text: str, expected: str):
+        # GIVEN
+        sut = ListParser()
+        children = InlineParser().parse(child_text)
+        # WHEN
+        actual = sut.parse(text, children)
         # THEN
         assert repr(actual) == expected
