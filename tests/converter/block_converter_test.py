@@ -1,7 +1,9 @@
 import pytest
 
-from app.converter.block_converter import BlockConverter, QuoteConverter, ListConverter
+from app.converter.block_converter import BlockConverter, QuoteConverter, ListConverter, CodeBlockConverter
 from app.markdown.parser import MarkdownParser
+
+from tests.factory.block_factory import CodeBlockFactory
 
 
 class TestBlockConverter:
@@ -145,3 +147,69 @@ class TestListConverter:
         # THEN
         assert repr(actual) == expected
 
+
+class TestCodeBlockConverter:
+    """ コードブロック要素へ統合できるか """
+
+    # 対象判定-対象
+    @pytest.mark.parametrize(
+        ('lines', 'expected'),
+        [
+            (['const i = 0;', '// comment'], True),
+        ],
+    )
+    def test_is_target_code_block(self, lines: list[str], expected: bool):
+        # GIVEN
+        sut = CodeBlockConverter()
+        blocks = CodeBlockFactory().create_multiple_code_block(lines)
+        # WHEN
+        actual = sut.is_target(blocks)
+        # THEN
+        assert actual == expected
+
+    # 対象判定-対象外
+    @pytest.mark.parametrize(
+        ('lines', 'expected'),
+        [
+            (['## Heading text', 'Plain text'], False),
+        ]
+    )
+    def test_is_target_not_code_block(self, lines: list[str], expected: bool):
+        # GIVEN
+        sut = CodeBlockConverter()
+        blocks = MarkdownParser().parse(lines).content
+        # WHEN
+        actual = sut.is_target(blocks)
+        # THEN
+        assert actual == expected
+
+    # 1つのコードブロックへ統合されるか
+    @pytest.mark.parametrize(
+        ('lines', 'expected'),
+        [
+            (
+                    ['', '# comment', 'instance = Klass()'],
+                    ('[CodeBlock: | Child of CodeBlock -> '
+                     '[Plain: | Child of Plain -> Plain: text=] | Child of CodeBlock -> '
+                     '[Plain: | Child of Plain -> Plain: text=# comment]'
+                     ' | Child of CodeBlock -> '
+                     '[Plain: | Child of Plain -> Plain: text=instance = Klass()]]')
+            ),
+            (
+                    ['## [参考](url)', '> 引用ここまで'],
+                    ('[CodeBlock: | Child of CodeBlock -> '
+                     '[Plain: | Child of Plain -> Plain: text=## [参考](url)]'
+                     ' | Child of CodeBlock -> '
+                     '[Plain: | Child of Plain -> Plain: text=> 引用ここまで]]')
+            ),
+        ],
+        ids=['code', 'not parsed']
+    )
+    def test_convert(self, lines: list[str], expected: str):
+        # GIVEN
+        sut = CodeBlockConverter()
+        blocks = CodeBlockFactory().create_multiple_code_block(lines)
+        # WHEN
+        actual = sut.convert(blocks)
+        # THEN
+        assert repr(actual) == expected
