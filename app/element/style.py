@@ -32,6 +32,14 @@ class ListItem(Style):
 
 
 @dataclasses.dataclass
+class CodeBlockStyle(Style):
+    """ コードブロック要素を表現 """
+
+
+# Inline
+
+
+@dataclasses.dataclass
 class Link(Style):
     """ リンク要素を表現 """
     href: str

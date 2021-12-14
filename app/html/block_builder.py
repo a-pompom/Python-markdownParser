@@ -1,11 +1,12 @@
-from app.element.block import Block, HeadingBlock, QuoteBlock, ListBlock, ListItemBlock
+from app.element.block import Block, HeadingBlock, QuoteBlock, ListBlock, ListItemBlock, CodeBlock
 
 
 class BlockBuilder:
     """ Block要素をもとに対応するHTML文字列を組み立てることを責務に持つ"""
 
     def __init__(self):
-        self._builders: list[IBuilder] = [HeadingBuilder(), QuoteBuilder(), ListItemBuilder(), ListBuilder()]
+        self._builders: list[IBuilder] = [HeadingBuilder(), QuoteBuilder(), ListItemBuilder(), ListBuilder(),
+                                          CodeBlockBuilder()]
 
     def build(self, block: Block, child_text: str) -> str:
         """
@@ -155,3 +156,29 @@ class ListItemBuilder(IBuilder):
         )
 
         return list_item
+
+
+class CodeBlockBuilder(IBuilder):
+    """ pre, code(コードブロック) 要素の組み立てを責務に持つ """
+
+    TEXT_EXPRESSION = '{text}'
+    TEMPLATE = f'<pre><code>{TEXT_EXPRESSION}</code></pre>'
+
+    def is_target(self, block: Block) -> bool:
+        return isinstance(block, CodeBlock)
+
+    def build(self, block: CodeBlock, child_text: str) -> str:
+        """
+        コードブロック要素のHTML文字列を組み立て
+
+        :param block: 組み立て元Block要素
+        :param child_text: 子要素文字列
+        :return: HTMLのpre, codeタグを含む文字列
+        """
+
+        # <pre><code>text</code></pre>
+        code_block = self.TEMPLATE.replace(
+            self.TEXT_EXPRESSION, child_text
+        )
+
+        return code_block

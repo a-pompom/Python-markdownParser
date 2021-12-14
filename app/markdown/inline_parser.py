@@ -160,3 +160,15 @@ class ImageParser(IParser):
 
         # imgタグは子要素のテキストを持たない
         return ImageInline(Image(src=src, alt=alt), '')
+
+
+# 特殊な要件に応じたInline要素の生成
+def create_plain_inline(markdown_text: str) -> PlainInline:
+    """
+    パース処理なしで元のマークダウンの行と対応するInline要素を生成\n
+    これは、コードブロックのような、元の記法をそのまま出力したい場合などで必要
+
+    :param markdown_text: 元のマークダウンの行文字列
+    :return: 元の文字列をそのまま格納したInline要素
+    """
+    return PlainInline(Plain(), markdown_text)

@@ -43,3 +43,41 @@ class TestMarkdownParser:
         actual = sut.parse(lines)
         # THEN
         assert repr(actual) == expected
+
+    # コードブロックのモードを制御できているか
+    @pytest.mark.parametrize(
+        ('lines', 'expected_list'),
+        [
+            (
+                ['## 概要', '> すてきな概要です'],
+                ['[Heading: size=2 | Child of Heading -> Plain: text=概要]',
+                 '[Quote: | Child of Quote -> Plain: text=すてきな概要です]']
+            ),
+
+            (
+                    ['### サンプルコード', '```', '# Pythonのコメント', '```', '#### 上はサンプルコードです'],
+                    ['[Heading: size=3 | Child of Heading -> Plain: text=サンプルコード]',
+                     '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
+                     '[Plain: | Child of Plain -> Plain: text=# Pythonのコメント]',
+                     '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
+                     '[Heading: size=4 | Child of Heading -> Plain: text=上はサンプルコードです]']
+            ),
+
+            (
+                    ['> コードが始まります', '```', '## コードを閉じるのを忘れました', '[まだコードです](url)'],
+                    ['[Quote: | Child of Quote -> Plain: text=コードが始まります]',
+                     '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
+                     '[Plain: | Child of Plain -> Plain: text=## コードを閉じるのを忘れました]',
+                     '[Plain: | Child of Plain -> Plain: text=[まだコードです](url)]']
+            ),
+        ],
+        ids=['no code block', 'code block with end symbol', 'no end symbol']
+    )
+    def test_parse_code_block_mode(self, lines: list[str], expected_list: list[str]):
+        # GIVEN
+        sut = MarkdownParser()
+        # WHEN
+        actual_result = sut.parse(lines)
+        # THEN
+        for actual, expected in zip(actual_result.content, expected_list):
+            repr(actual) == expected

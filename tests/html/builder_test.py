@@ -21,15 +21,53 @@ class TestHtmlBuilder:
 
             (MarkdownParser().parse(['### [Python](https://docs.python.org/3/)とは']),
              '<h3><a href="https://docs.python.org/3/">Python</a>とは</h3>'),
-
-            (Converter().convert(MarkdownParser().parse(
-                ['* task 1', '* task 2', '* task 3']
-            )), '<ul><li>task 1</li><li>task 2</li><li>task 3</li></ul>')
         ],
-        ids=['plain', 'only block', 'only inline', 'block and inline', 'contain list'])
+        ids=['plain', 'only block', 'only inline', 'block and inline'])
     def test_build(self, parse_result: ParseResult, expected: str):
         # GIVEN
         sut = HtmlBuilder()
+        # WHEN
+        actual = sut.build(parse_result)
+        # THEN
+        assert actual == expected
+
+    # リストの組み立て
+    @pytest.mark.parametrize(
+        ('lines', 'expected'),
+        [
+            (['* task 1', '* task 2', '* task 3'],
+             '<ul><li>task 1</li><li>task 2</li><li>task 3</li></ul>')
+        ]
+    )
+    def test_build_list(self, lines: list[str], expected: str):
+        sut = HtmlBuilder()
+        parse_result = Converter().convert(MarkdownParser().parse(lines))
+        # WHEN
+        actual = sut.build(parse_result)
+        # THEN
+        assert actual == expected
+
+    # コードブロックの組み立て
+    @pytest.mark.parametrize(
+        ('lines', 'expected'),
+        [
+            (['```', '# コメントしておきます。', 'const i = 0;', '```'],
+             ('<pre><code>'
+              '# コメントしておきます。'
+              'const i = 0;'
+              '</code></pre>')),
+
+            (['```', 'someFunction()', '> コードは終わっているはず。'],
+             ('<pre><code>'
+              'someFunction()'
+              '> コードは終わっているはず。'
+              '</code></pre>')),
+        ],
+        ids=['has end', 'no end']
+    )
+    def test_build_code_list(self, lines: list[str], expected: str):
+        sut = HtmlBuilder()
+        parse_result = Converter().convert(MarkdownParser().parse(lines))
         # WHEN
         actual = sut.build(parse_result)
         # THEN

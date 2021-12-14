@@ -1,10 +1,11 @@
 import pytest
 
-from app.html.block_builder import BlockBuilder, HeadingBuilder, QuoteBuilder, ListBuilder, ListItemBuilder
+from app.html.block_builder import BlockBuilder, HeadingBuilder, QuoteBuilder, ListBuilder, ListItemBuilder, \
+    CodeBlockBuilder
 from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser
 from app.markdown.inline_parser import InlineParser
 
-from tests.factory.block_factory import ListItemFactory
+from tests.factory.block_factory import ListItemFactory, CodeBlockFactory
 
 
 class TestBlockBuilder:
@@ -185,5 +186,62 @@ class TestListItemBuilder:
         block = ListItemFactory().create_single_list_item(child_text)
         # WHEN
         actual = sut.build(block, child_text)
+        # THEN
+        assert actual == expected
+
+
+class TestCodeBlockBuilder:
+    """ pre, codeタグ文字列を組み立てられるか """
+
+    # ビルド対象
+    @pytest.mark.parametrize(
+        'text',
+        [
+            '# code comment',
+            '() => {}',
+        ]
+    )
+    def test_is_target_target(self, text: str):
+        # GIVEN
+        sut = CodeBlockBuilder()
+        block = CodeBlockFactory().create_single_code_block(text)
+        # WHEN
+        actual = sut.is_target(block)
+        # THEN
+        assert actual is True
+
+    # ビルド対象でない
+    @pytest.mark.parametrize(
+        ('block_text', 'child_text'),
+        [
+            ('## 概要', '概要'),
+            ('// コメントだけれどコードではない', '// コメントだけれどコードではない')
+        ]
+    )
+    def test_is_target_not_target(self, block_text: str, child_text: str):
+        # GIVEN
+        sut = CodeBlockBuilder()
+        block = BlockParser().parse(block_text, InlineParser().parse(child_text))
+        # WHEN
+        actual = sut.is_target(block)
+        # THEN
+        assert actual is False
+
+    # pre, codeタグ文字列の組み立て
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            ('List<String> list;', '<pre><code>List<String> list;</code></pre>'),
+            ('## [参考](url)', '<pre><code>## [参考](url)</code></pre>'),
+
+        ],
+        ids=['code', 'markdown text']
+    )
+    def test_build(self, text: str, expected: str):
+        # GIVEN
+        sut = CodeBlockBuilder()
+        block = CodeBlockFactory().create_single_code_block(text)
+        # WHEN
+        actual = sut.build(block, text)
         # THEN
         assert actual == expected

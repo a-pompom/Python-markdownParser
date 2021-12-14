@@ -1,7 +1,7 @@
 import dataclasses
 from typing import Union
 
-from app.element.style import Style, Plain, Heading, BlockQuote, ListStyle, ListItem
+from app.element.style import Style, Plain, Heading, BlockQuote, ListStyle, ListItem, CodeBlockStyle
 from app.element.inline import Inline
 
 Children = list[Union[Inline, 'Block']]
@@ -67,6 +67,7 @@ class HeadingBlock(Block):
         return f'[Heading: size={self.style.size}{child_repr_text}]'
 
 
+@dataclasses.dataclass
 class QuoteBlock(Block):
     """ 引用要素 """
     style: BlockQuote
@@ -76,6 +77,7 @@ class QuoteBlock(Block):
         return f'[Quote:{child_repr_text}]'
 
 
+@dataclasses.dataclass
 class ListBlock(Block):
     """ リスト要素 """
     style: ListStyle
@@ -85,6 +87,7 @@ class ListBlock(Block):
         return f'[List:{child_repr_text}]'
 
 
+@dataclasses.dataclass
 class ListItemBlock(Block):
     """ リスト子要素 """
     style: ListItem
@@ -92,3 +95,13 @@ class ListItemBlock(Block):
     def __repr__(self):
         child_repr_text = create_repr_children('ListItem', self.children)
         return f'[ListItem:{child_repr_text}]'
+
+
+@dataclasses.dataclass
+class CodeBlock(Block):
+    """ コードブロック要素 """
+    style: CodeBlockStyle
+
+    def __repr__(self):
+        child_repr_text = create_repr_children('CodeBlock', self.children)
+        return f'[CodeBlock:{child_repr_text}]'

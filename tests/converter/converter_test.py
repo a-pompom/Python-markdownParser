@@ -7,13 +7,28 @@ from app.markdown.parser import MarkdownParser
 class TestConverter:
     """ 複数行に渡る処理を統合、といったマークダウンとHTMLの橋渡し処理を検証 """
 
+    # 変換無し
     @pytest.mark.parametrize(
         ('lines', 'expected'),
         [
             (['# 概要', 'これは概要です。'],
              ('[Heading: size=1 | Child of Heading -> Plain: text=概要] '
               '[Plain: | Child of Plain -> Plain: text=これは概要です。]')),
+        ]
+    )
+    def test_no_convert(self, lines: list[str], expected: str):
+        # GIVEN
+        sut = Converter()
+        markdown_result = MarkdownParser().parse(lines)
+        # WHEN
+        actual = sut.convert(markdown_result)
+        # THEN
+        assert repr(actual) == expected
 
+    # List要素を1つに統合できるか
+    @pytest.mark.parametrize(
+        ('lines', 'expected'),
+        [
             (['> いい感じのことを', '> 言っているようです'],
              ('[Quote: | Child of Quote -> '
               '[Plain: | Child of Plain -> Plain: text=いい感じのことを]'
@@ -31,9 +46,9 @@ class TestConverter:
               '[Plain: | Child of Plain -> Plain: text=再開]]'))
 
         ],
-        ids=['no convert', 'only one type element', 'mixed']
+        ids=['only one type element', 'mixed']
     )
-    def test_convert(self, lines: list[str], expected: str):
+    def test_convert_list(self, lines: list[str], expected: str):
         # GIVEN
         sut = Converter()
         markdown_result = MarkdownParser().parse(lines)
@@ -41,3 +56,34 @@ class TestConverter:
         actual = sut.convert(markdown_result)
         # THEN
         assert repr(actual) == expected
+
+    @pytest.mark.parametrize(
+        ('lines', 'expected'),
+        [
+            (['```', '# comment, not heading', 'def func():', '```'],
+             ('[CodeBlock: | Child of CodeBlock -> '
+              '[Plain: | Child of Plain -> Plain: text=]'
+              ' | Child of CodeBlock -> '
+              '[Plain: | Child of Plain -> Plain: text=# comment, not heading]'
+              ' | Child of CodeBlock -> '
+              '[Plain: | Child of Plain -> Plain: text=def func():]]')),
+
+            (['```', '[参考](https://)', '> コードは終わっていたはずです'],
+             ('[CodeBlock: | Child of CodeBlock -> '
+              '[Plain: | Child of Plain -> Plain: text=]'
+              ' | Child of CodeBlock -> '
+              '[Plain: | Child of Plain -> Plain: text=[参考](https://)]'
+              ' | Child of CodeBlock -> '
+              '[Plain: | Child of Plain -> Plain: text=> コードは終わっていたはずです]]')),
+        ],
+        ids=['has end', 'no end']
+    )
+    def test_convert_block(self, lines: list[str], expected: str):
+        # GIVEN
+        sut = Converter()
+        markdown_result = MarkdownParser().parse(lines)
+        # WHEN
+        actual = sut.convert(markdown_result)
+        # THEN
+        assert repr(actual) == expected
+
