@@ -1,6 +1,7 @@
-from typing import Generator
+from typing import Generator, Literal
 
-from app.element.block import Block, ParseResult
+from app.element.block import Block, ParseResult, CodeBlock
+from app.element.style import CodeBlockStyle
 from app.converter.block_converter import BlockConverter
 
 
@@ -22,12 +23,51 @@ class Converter:
         """
         convert_result_content = []
 
+        # コードブロックのような、記法の範囲内を同一とみなす要素をグループ化
+        # より具体的には、同種のBlock要素へと変換することで、コンバータの処理単位としている
+        grouped_markdown_result = group_same_range_blocks(markdown_result.content)
+
         # 変換結果を同種のBlock単位へ分割してから変換
         # こうすることで、コンバータはただ入力を統合したものを出力するだけでよい
-        for convert_target in split_to_convert_target(markdown_result.content):
+        for convert_target in split_to_convert_target(grouped_markdown_result):
             convert_result_content += self._block_converter.convert(convert_target)
 
         return ParseResult(content=convert_result_content)
+
+
+def group_same_range_blocks(blocks: list[Block]) -> list[Block]:
+    """
+    コードブロックのような間も同一のBlock要素とみなすものをグルーピング
+
+    :param blocks: マークダウン変換結果
+    :return: 範囲内を同一とみなすBlock要素がグループ化された結果
+    """
+
+    # 現在はどの範囲のBlock要素を処理しているか
+    # モードに応じて範囲内のBlock要素をグループ化
+    mode: Literal['Block'] | Literal['CodeBlock'] = 'Block'
+    grouped_blocks = []
+
+    for block in blocks:
+
+        # コードブロック
+        # 始点は、言語などの属性を後から参照するため、そのままグループ後のリストへ追加
+        # 始点
+        if mode == 'Block' and isinstance(block, CodeBlock):
+            grouped_blocks.append(block)
+            mode = 'CodeBlock'
+            continue
+        # 中間
+        if mode == 'CodeBlock' and not isinstance(block, CodeBlock):
+            grouped_blocks.append(CodeBlock(CodeBlockStyle(), block.children))
+            continue
+        # 終点
+        if mode == 'CodeBlock' and isinstance(block, CodeBlock):
+            mode = 'Block'
+            continue
+
+        grouped_blocks.append(block)
+    return grouped_blocks
 
 
 def split_to_convert_target(blocks: list[Block]) -> Generator[list[Block], None, None]:

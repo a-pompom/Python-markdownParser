@@ -1,13 +1,13 @@
 from typing import TypeGuard
-from app.element.block import Block, PlainBlock, QuoteBlock, ListBlock, ListItemBlock
-from app.element.style import Plain, BlockQuote, ListStyle, ListItem
+from app.element.block import Block, PlainBlock, QuoteBlock, ListBlock, ListItemBlock, CodeBlock
+from app.element.style import Plain, BlockQuote, ListStyle, ListItem, CodeBlockStyle
 
 
 class BlockConverter:
     """ 同種のBlock要素の集まりをHTMLと対応した形へ変換することを責務に持つ """
 
     def __init__(self):
-        self._converter_list = [QuoteConverter(), ListConverter()]
+        self._converter_list = [QuoteConverter(), ListConverter(), CodeBlockConverter()]
 
     def convert(self, blocks: list[Block]) -> list[Block]:
         """
@@ -72,3 +72,17 @@ class ListConverter(IConverter):
         # リストの子要素はliへ対応させるため、変換
         children = [ListItemBlock(ListItem(), block.children) for block in blocks]
         return ListBlock(ListStyle(), children=children)
+
+
+class CodeBlockConverter(IConverter):
+    """ コードブロック要素を組み立てることを責務に持つ """
+
+    def is_target(self, blocks: list[Block]) -> TypeGuard[list[Block]]:
+        return all([isinstance(block, CodeBlock) for block in blocks])
+
+    def convert(self, blocks: list[CodeBlock]) -> CodeBlock:
+        # コードブロックはpre, codeタグの中でひとまとめに記述するため、統合
+        # TODO 将来的には、```<language>の部分からhighlight jsのクラス属性を組み立てられるようにしたい
+        children = [PlainBlock(Plain(), block.children) for block in blocks]
+        return CodeBlock(CodeBlockStyle(), children=children)
+
