@@ -1,6 +1,6 @@
 from app.regex import regex
-from app.element.style import Plain, Heading, BlockQuote, ListStyle
-from app.element.block import Children, Block, PlainBlock, HeadingBlock, QuoteBlock, ListBlock
+from app.element.style import Plain, Heading, BlockQuote, ListStyle, CodeBlockStyle
+from app.element.block import Children, Block, PlainBlock, HeadingBlock, QuoteBlock, ListBlock, CodeBlock
 
 # 正規表現のグループのうち、Blockの記法に属さない箇所のインデックス
 # Inlineを解釈する処理をBlockとは独立させるために利用
@@ -37,7 +37,7 @@ class BlockParser:
     """ Block要素と対応するマークダウンの記法を解釈することを責務に持つ """
 
     def __init__(self):
-        self.parsers: list[IParser] = [HeadingParser(), QuoteParser(), ListParser()]
+        self.parsers: list[IParser] = [HeadingParser(), QuoteParser(), ListParser(), CodeBlockParser()]
 
     def extract_inline_text(self, markdown_text: str) -> str:
         """
@@ -167,3 +167,37 @@ class ListParser(IParser):
         :return: リストを表すBlock要素
         """
         return ListBlock(ListStyle(), children)
+
+
+class CodeBlockParser(IParser):
+    """ コードブロック要素の解釈を責務に持つ """
+    PATTERN = r'(```)'
+
+    def is_target(self, markdown_text: str) -> bool:
+        return contain_block_notation(self.PATTERN, markdown_text)
+
+    def extract_text(self, markdown_text: str) -> str:
+        # コードブロックはInline要素へ文字列を渡す必要がないため、空文字を返却
+        return ''
+
+    def parse(self, markdown_text: str, children: Children) -> CodeBlock:
+        """
+        コードブロック行を解釈
+
+        :param markdown_text: 処理対象行
+        :param children: Inlineパーサによって解釈された要素の集まり
+        :return: コードブロックを表すBlock要素
+        """
+        return CodeBlock(CodeBlockStyle(), children)
+
+
+# 特殊な要件によるBlockの生成
+def create_plain_block(children: Children) -> PlainBlock:
+    """
+    パース処理無しで元の記法を保持したPlainなBlock要素を生成\n
+    これは、コードブロックのような、元のマークダウンの記法をパースせず、そのまま残したいときに必要
+
+    :param children: 子要素 元の行をすべて保持
+    :return: パース処理無しで生成された元の行を表現するBlock要素
+    """
+    return PlainBlock(Plain(), children)
