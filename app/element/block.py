@@ -1,7 +1,6 @@
 import dataclasses
 from typing import Union
 
-from app.element.style import Style, Plain, Heading, BlockQuote, ListStyle, ListItem, CodeBlockStyle
 from app.element.inline import Inline
 
 Children = list[Union[Inline, 'Block']]
@@ -27,7 +26,6 @@ def create_repr_children(block_name: str, children: Children) -> str:
 @dataclasses.dataclass
 class Block:
     """ 行要素を保持 """
-    style: Style
     children: Children
 
 
@@ -43,7 +41,6 @@ class ParseResult:
 @dataclasses.dataclass
 class PlainBlock(Block):
     """ どの記法にも属さない要素 """
-    style: Plain
     # コードブロックの中ではpre, codeタグ以下で描画されることになる
     # このとき階層が生じ得るので、インデント階層を持たせておく
     indent_depth: int = 0
@@ -56,17 +53,16 @@ class PlainBlock(Block):
 @dataclasses.dataclass
 class HeadingBlock(Block):
     """ ヘッダ要素 """
-    style: Heading
+    size: int
 
     def __repr__(self):
         child_repr_text = create_repr_children('Heading', self.children)
-        return f'[Heading: size={self.style.size}{child_repr_text}]'
+        return f'[Heading: size={self.size}{child_repr_text}]'
 
 
 @dataclasses.dataclass
 class QuoteBlock(Block):
     """ 引用要素 """
-    style: BlockQuote
 
     def __repr__(self):
         child_repr_text = create_repr_children('Quote', self.children)
@@ -76,7 +72,6 @@ class QuoteBlock(Block):
 @dataclasses.dataclass
 class ListBlock(Block):
     """ リスト要素 """
-    style: ListStyle
     indent_depth: int = 0
 
     def __repr__(self):
@@ -87,7 +82,6 @@ class ListBlock(Block):
 @dataclasses.dataclass
 class ListItemBlock(Block):
     """ リスト子要素 """
-    style: ListItem
     # リスト親要素の階層で描画されることから、必ず階層は1つ下より深くなる
     indent_depth: int = 1
 
@@ -99,7 +93,6 @@ class ListItemBlock(Block):
 @dataclasses.dataclass
 class CodeBlock(Block):
     """ コードブロック要素 """
-    style: CodeBlockStyle
 
     def __repr__(self):
         child_repr_text = create_repr_children('CodeBlock', self.children)

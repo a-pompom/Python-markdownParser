@@ -93,7 +93,7 @@ class HeadingBuilder(IBuilder):
         :return: HTMLのヘッダタグを含む文字列
         """
 
-        heading_tag = f'h{block.style.size}'
+        heading_tag = f'h{block.size}'
         heading = self.TEMPLATE.replace(
             self.HEADING_EXPRESSION, heading_tag
         ).replace(

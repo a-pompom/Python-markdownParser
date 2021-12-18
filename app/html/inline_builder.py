@@ -64,7 +64,7 @@ class LinkBuilder(IBuilder):
         :return: aタグHTML文字列
         """
 
-        href = inline.style.href
+        href = inline.href
         # <a href="url">text</a>
         anchor_tag = self.TEMPLATE.replace(
             self.HREF_EXPRESSION, href,
@@ -119,9 +119,9 @@ class ImageBuilder(IBuilder):
         """
 
         img_tag = self.TEMPLATE.replace(
-            self.SRC_EXPRESSION, inline.style.src
+            self.SRC_EXPRESSION, inline.src
         ).replace(
-            self.ALT_EXPRESSION, inline.style.alt
+            self.ALT_EXPRESSION, inline.alt
         )
 
         return img_tag

@@ -1,6 +1,5 @@
 from typing import TypeGuard
 from app.element.block import Block, PlainBlock, QuoteBlock, ListBlock, ListItemBlock, CodeBlock
-from app.element.style import Plain, BlockQuote, ListStyle, ListItem, CodeBlockStyle
 
 
 class BlockConverter:
@@ -58,8 +57,8 @@ class QuoteConverter(IConverter):
         return all([isinstance(block, QuoteBlock) for block in blocks])
 
     def convert(self, blocks: list[QuoteBlock]) -> QuoteBlock:
-        children = [PlainBlock(Plain(), block.children) for block in blocks]
-        return QuoteBlock(BlockQuote(), children=children)
+        children = [PlainBlock(children=block.children) for block in blocks]
+        return QuoteBlock(children=children)
 
 
 class ListConverter(IConverter):
@@ -70,8 +69,8 @@ class ListConverter(IConverter):
 
     def convert(self, blocks: list[ListBlock]) -> ListBlock:
         # リストの子要素はliへ対応させるため、変換
-        children = [ListItemBlock(ListItem(), block.children) for block in blocks]
-        return ListBlock(ListStyle(), children=children)
+        children = [ListItemBlock(children=block.children) for block in blocks]
+        return ListBlock(children=children)
 
 
 class CodeBlockConverter(IConverter):
@@ -87,6 +86,6 @@ class CodeBlockConverter(IConverter):
         # コードブロックはpre, codeタグの中でひとまとめに記述するため、統合
         # 先頭要素はHTMLへ出力する必要がないので、除外
         # TODO 将来的には、```<language>の部分からhighlight jsのクラス属性を組み立てられるようにしたい
-        children = [PlainBlock(style=Plain(), indent_depth=self.INDENT_DEPTH, children=block.children)
+        children = [PlainBlock(indent_depth=self.INDENT_DEPTH, children=block.children)
                     for block in blocks[1:]]
-        return CodeBlock(CodeBlockStyle(), children=children)
+        return CodeBlock(children=children)
