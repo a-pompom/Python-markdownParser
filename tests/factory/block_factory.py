@@ -1,4 +1,3 @@
-from app.element.style import ListItem, CodeBlockStyle, Plain
 from app.element.block import ListItemBlock, CodeBlock
 from app.element.inline import PlainInline
 from app.markdown.inline_parser import InlineParser
@@ -18,7 +17,7 @@ class ListItemFactory:
         :param text: リスト子要素の文字列
         :return: ListItemBlock要素
         """
-        return ListItemBlock(ListItem(), InlineParser().parse(text))
+        return ListItemBlock(children=InlineParser().parse(text))
 
     def create_multiple_list_item(self, lines: list[str]) -> list[ListItemBlock]:
         """
@@ -27,7 +26,7 @@ class ListItemFactory:
         :param lines: 各リスト子要素の文字列を格納
         :return: ListItemBlock要素のリスト
         """
-        return [ListItemBlock(ListItem(), InlineParser().parse(line)) for line in lines]
+        return [ListItemBlock(children=InlineParser().parse(line)) for line in lines]
 
 
 class CodeBlockFactory:
@@ -41,7 +40,7 @@ class CodeBlockFactory:
         :param text: コードブロック要素の文字列
         :return: CodeBlock要素
         """
-        return CodeBlock(CodeBlockStyle(), [PlainInline(Plain(), text)])
+        return CodeBlock(children=[PlainInline(text=text)])
 
     def create_multiple_code_block(self, lines: list[str]) -> list[CodeBlock]:
         """
@@ -51,4 +50,4 @@ class CodeBlockFactory:
         :param lines: 各コードブロック要素の文字列を格納
         :return: CodeBlock要素のリスト
         """
-        return [CodeBlock(CodeBlockStyle(), [PlainInline(Plain(), line)]) for line in lines]
+        return [CodeBlock(children=[PlainInline(text=line)]) for line in lines]
