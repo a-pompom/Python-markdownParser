@@ -1,5 +1,4 @@
 from app.regex import regex
-from app.element.style import Plain, Heading, BlockQuote, ListStyle, CodeBlockStyle
 from app.element.block import Children, Block, PlainBlock, HeadingBlock, QuoteBlock, ListBlock, CodeBlock
 
 # 正規表現のグループのうち、Blockの記法に属さない箇所のインデックス
@@ -66,7 +65,7 @@ class BlockParser:
             if parser.is_target(line):
                 return parser.parse(line, children)
 
-        return PlainBlock(Plain(), children)
+        return PlainBlock(children)
 
 
 class IParser:
@@ -124,7 +123,7 @@ class HeadingParser(IParser):
 
         heading_style, text = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2])
 
-        return HeadingBlock(Heading(size=len(heading_style)), children)
+        return HeadingBlock(size=len(heading_style), children=children)
 
 
 class QuoteParser(IParser):
@@ -145,7 +144,7 @@ class QuoteParser(IParser):
         :param children: Inlineパーサによって解釈された要素の集まり
         :return: 引用を表すBlock要素
         """
-        return QuoteBlock(BlockQuote(), children)
+        return QuoteBlock(children)
 
 
 class ListParser(IParser):
@@ -166,7 +165,7 @@ class ListParser(IParser):
         :param children: Inlineパーサによって解釈された要素の集まり
         :return: リストを表すBlock要素
         """
-        return ListBlock(ListStyle(), children)
+        return ListBlock(children)
 
 
 class CodeBlockParser(IParser):
@@ -188,7 +187,7 @@ class CodeBlockParser(IParser):
         :param children: Inlineパーサによって解釈された要素の集まり
         :return: コードブロックを表すBlock要素
         """
-        return CodeBlock(CodeBlockStyle(), children)
+        return CodeBlock(children)
 
 
 # 特殊な要件によるBlockの生成
@@ -200,4 +199,4 @@ def create_plain_block(children: Children) -> PlainBlock:
     :param children: 子要素 元の行をすべて保持
     :return: パース処理無しで生成された元の行を表現するBlock要素
     """
-    return PlainBlock(Plain(), children)
+    return PlainBlock(children)

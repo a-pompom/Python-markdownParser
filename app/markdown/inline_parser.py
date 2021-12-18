@@ -1,6 +1,5 @@
 from app.regex import regex
 from app.element.inline import Inline, PlainInline, LinkInline, CodeInline, ImageInline
-from app.element.style import Plain, Link, Code, Image
 
 
 class InlineParser:
@@ -40,7 +39,7 @@ class InlineParser:
 
                 return children
 
-        return [PlainInline(Plain(), text)]
+        return [PlainInline(text=text)]
 
 
 class IParser:
@@ -104,7 +103,7 @@ class LinkParser(IParser):
         # 遷移先URL・リンクテキストを属性として切り出し
         link_text, href = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2])
 
-        return LinkInline(Link(href=href), link_text)
+        return LinkInline(href=href, text=link_text)
 
 
 class CodeParser(IParser):
@@ -131,7 +130,7 @@ class CodeParser(IParser):
 
         code_text = regex.extract_from_group(self.PATTERN, markdown_text, [1])
 
-        return CodeInline(Code(), code_text)
+        return CodeInline(text=code_text)
 
 
 class ImageParser(IParser):
@@ -159,7 +158,7 @@ class ImageParser(IParser):
         alt, src = regex.extract_from_group(self.PATTERN, markdown_text, [1, 2])
 
         # imgタグは子要素のテキストを持たない
-        return ImageInline(Image(src=src, alt=alt), '')
+        return ImageInline(src=src, alt=alt, text='')
 
 
 # 特殊な要件に応じたInline要素の生成
@@ -171,4 +170,4 @@ def create_plain_inline(markdown_text: str) -> PlainInline:
     :param markdown_text: 元のマークダウンの行文字列
     :return: 元の文字列をそのまま格納したInline要素
     """
-    return PlainInline(Plain(), markdown_text)
+    return PlainInline(text=markdown_text)

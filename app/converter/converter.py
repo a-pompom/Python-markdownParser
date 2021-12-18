@@ -1,7 +1,6 @@
 from typing import Generator, Literal
 
 from app.element.block import Block, ParseResult, CodeBlock
-from app.element.style import CodeBlockStyle
 from app.converter.block_converter import BlockConverter
 
 
@@ -56,7 +55,7 @@ def group_same_range_blocks(blocks: list[Block]) -> list[Block]:
             continue
         # 中間
         if mode == 'CodeBlock' and not isinstance(block, CodeBlock):
-            grouped_blocks.append(CodeBlock(CodeBlockStyle(), block.children))
+            grouped_blocks.append(CodeBlock(children=block.children))
             continue
         # 終点
         if mode == 'CodeBlock' and isinstance(block, CodeBlock):
