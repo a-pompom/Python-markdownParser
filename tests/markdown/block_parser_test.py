@@ -30,7 +30,7 @@ class TestBlockParser:
             (
                     'plain text',
                     'plain text',
-                    '[Plain: | Child of Plain -> Plain: text=plain text]'
+                    '[Plain: indent_depth=0 | Child of Plain -> Plain: text=plain text]'
             ),
             (
                     '## awesome heading',
@@ -45,7 +45,7 @@ class TestBlockParser:
             (
                     '* 手順その1',
                     '手順その1',
-                    '[List: | Child of List -> Plain: text=手順その1]'
+                    '[List: indent_depth=0 | Child of List -> Plain: text=手順その1]'
             ),
             (
                     '```',
@@ -230,9 +230,9 @@ class TestList:
     @pytest.mark.parametrize(
         ('text', 'child_text', 'expected'),
         [
-            ('* first of all', 'first of all', '[List: | Child of List -> Plain: text=first of all]'),
-            ('- 1st', '1st', '[List: | Child of List -> Plain: text=1st]'),
-            ('- 最初', '最初', '[List: | Child of List -> Plain: text=最初]'),
+            ('* first of all', 'first of all', '[List: indent_depth=0 | Child of List -> Plain: text=first of all]'),
+            ('- 1st', '1st', '[List: indent_depth=0 | Child of List -> Plain: text=1st]'),
+            ('- 最初', '最初', '[List: indent_depth=0 | Child of List -> Plain: text=最初]'),
         ],
         ids=['* list', '- list', 'full width list']
     )
@@ -244,6 +244,7 @@ class TestList:
         actual = sut.parse(text, children)
         # THEN
         assert repr(actual) == expected
+
 
 class TestCodeBlock:
     """ ```で表現されるコードブロック要素"""

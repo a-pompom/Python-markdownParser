@@ -15,26 +15,24 @@ class TestGrouping:
                 ['```', 'const i = 0;', '```', 'plain text'],
                 ['[CodeBlock: | Child of CodeBlock -> Plain: text=]',
                  '[CodeBlock: | Child of CodeBlock -> Plain: text=const i = 0;]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
-                 '[Plain: | Child of Plain -> Plain: text=plain text]']
+                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=plain text]']
             ),
             (
                 ['# heading', '```', 'sort();', '```'],
                 ['[Heading: size=1 | Child of Heading -> Plain: text=heading]',
                  '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=sort();]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=]']
+                 '[CodeBlock: | Child of CodeBlock -> Plain: text=sort();]']
             ),
             (
                 ['本文', '```', 'for (int i=0; i < 10; i++)', '```'],
-                ['[Plain: | Child of Plain -> Plain: text=本文]',
+                ['[Plain: indent_depth=0 | Child of Plain -> Plain: text=本文]',
                  '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=for (int i=0; i < 10; i++)]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=]']
+                 '[CodeBlock: | Child of CodeBlock -> Plain: text=for (int i=0; i < 10; i++)]']
+
             ),
             (
                 ['コードの例を示します。', '```', '> 入れ忘れました'],
-                ['[Plain: | Child of Plain -> Plain: text=コードの例を示します。]',
+                ['[Plain: indent_depth=0 | Child of Plain -> Plain: text=コードの例を示します。]',
                  '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
                  '[CodeBlock: | Child of CodeBlock -> Plain: text=> 入れ忘れました]']
             ),
@@ -58,7 +56,7 @@ class TestGrouping:
         [
             (
                     ['plain text', '# heading'],
-                    ['[Plain: | Child of Plain -> Plain: text=plain text]',
+                    ['[Plain: indent_depth=0 | Child of Plain -> Plain: text=plain text]',
                      '[Heading: size=1 | Child of Heading -> Plain: text=heading]']
             )
         ]

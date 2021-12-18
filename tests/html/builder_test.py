@@ -5,6 +5,11 @@ from app.element.block import ParseResult
 from app.markdown.parser import MarkdownParser
 from app.converter.converter import Converter
 
+from app.settings import setting
+
+LINE_BREAK = setting['newline_code']
+INDENT = setting['indent']
+
 
 class TestHtmlBuilder:
     """ ParseResult要素からHTML文字列が組み立てられるか検証 """
@@ -13,14 +18,35 @@ class TestHtmlBuilder:
     @pytest.mark.parametrize(
         ('parse_result', 'expected'),
         [
-            (MarkdownParser().parse(['plain text']), 'plain text'),
+            (
+                    MarkdownParser().parse(['plain text']),
+                    f'plain text{LINE_BREAK}'
+            ),
 
-            (MarkdownParser().parse(['#### 課題: 頑張りたい']), '<h4>課題: 頑張りたい</h4>'),
+            (
+                    MarkdownParser().parse(['#### 課題: 頑張りたい']),
+                    (
+                            f'<h4>{LINE_BREAK}'
+                            f'{INDENT}課題: 頑張りたい{LINE_BREAK}'
+                            f'</h4>{LINE_BREAK}'
+                    )
+            ),
 
-            (MarkdownParser().parse(['[参考](https://www.google.com/)']), '<a href="https://www.google.com/">参考</a>'),
+            (
+                    MarkdownParser().parse(['[参考](https://www.google.com/)']),
+                    (
+                            f'<a href="https://www.google.com/">参考</a>{LINE_BREAK}'
+                    )
+            ),
 
-            (MarkdownParser().parse(['### [Python](https://docs.python.org/3/)とは']),
-             '<h3><a href="https://docs.python.org/3/">Python</a>とは</h3>'),
+            (
+                    MarkdownParser().parse(['### [Python](https://docs.python.org/3/)とは']),
+                    (
+                            f'<h3>{LINE_BREAK}'
+                            f'{INDENT}<a href="https://docs.python.org/3/">Python</a>とは{LINE_BREAK}'
+                            f'</h3>{LINE_BREAK}'
+                    )
+            ),
         ],
         ids=['plain', 'only block', 'only inline', 'block and inline'])
     def test_build(self, parse_result: ParseResult, expected: str):
@@ -35,8 +61,22 @@ class TestHtmlBuilder:
     @pytest.mark.parametrize(
         ('lines', 'expected'),
         [
-            (['* task 1', '* task 2', '* task 3'],
-             '<ul><li>task 1</li><li>task 2</li><li>task 3</li></ul>')
+            (
+                    ['* task 1', '* task 2', '* task 3'],
+                    (
+                            f'<ul>{LINE_BREAK}'
+                            f'{INDENT}<li>{LINE_BREAK}'
+                            f'{INDENT}{INDENT}task 1{LINE_BREAK}'
+                            f'{INDENT}</li>{LINE_BREAK}'
+                            f'{INDENT}<li>{LINE_BREAK}'
+                            f'{INDENT}{INDENT}task 2{LINE_BREAK}'
+                            f'{INDENT}</li>{LINE_BREAK}'
+                            f'{INDENT}<li>{LINE_BREAK}'
+                            f'{INDENT}{INDENT}task 3{LINE_BREAK}'
+                            f'{INDENT}</li>{LINE_BREAK}'
+                            f'</ul>{LINE_BREAK}'
+                    )
+            )
         ]
     )
     def test_build_list(self, lines: list[str], expected: str):
@@ -52,16 +92,22 @@ class TestHtmlBuilder:
         ('lines', 'expected'),
         [
             (['```', '# コメントしておきます。', 'const i = 0;', '```'],
-             ('<pre><code>'
-              '# コメントしておきます。'
-              'const i = 0;'
-              '</code></pre>')),
+             (f'<pre>{LINE_BREAK}'
+              f'{INDENT}<code>{LINE_BREAK}'
+              f'{INDENT}{INDENT}# コメントしておきます。{LINE_BREAK}'
+              f'{INDENT}{INDENT}const i = 0;{LINE_BREAK}'
+              f'{INDENT}</code>{LINE_BREAK}'
+              f'</pre>{LINE_BREAK}')),
 
             (['```', 'someFunction()', '> コードは終わっているはず。'],
-             ('<pre><code>'
-              'someFunction()'
-              '> コードは終わっているはず。'
-              '</code></pre>')),
+             (f'<pre>{LINE_BREAK}'
+              f'{INDENT}<code>{LINE_BREAK}'
+              f'{INDENT}{INDENT}someFunction(){LINE_BREAK}'
+              f'{INDENT}{INDENT}> コードは終わっているはず。{LINE_BREAK}'
+              f'{INDENT}</code>{LINE_BREAK}'
+              f'</pre>{LINE_BREAK}'))
+
+            ,
         ],
         ids=['has end', 'no end']
     )
