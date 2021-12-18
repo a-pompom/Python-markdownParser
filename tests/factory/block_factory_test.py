@@ -10,8 +10,8 @@ class TestListItemFactory:
     @pytest.mark.parametrize(
         ('text', 'expected'),
         [
-            ('item1', '[ListItem: | Child of ListItem -> Plain: text=item1]'),
-            ('要素1', '[ListItem: | Child of ListItem -> Plain: text=要素1]'),
+            ('item1', '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=item1]'),
+            ('要素1', '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=要素1]'),
 
         ],
         ids=['ascii', 'full width']
@@ -29,8 +29,8 @@ class TestListItemFactory:
         ('lines', 'expected_list'),
         [
             (['first', 'second'],
-             ['[ListItem: | Child of ListItem -> Plain: text=first]',
-              '[ListItem: | Child of ListItem -> Plain: text=second]'])
+             ['[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=first]',
+              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=second]'])
         ]
     )
     def test_multiple(self, lines: list[str], expected_list: list[str]):

@@ -77,12 +77,16 @@ class ListConverter(IConverter):
 class CodeBlockConverter(IConverter):
     """ コードブロック要素を組み立てることを責務に持つ """
 
+    # pre, codeタグ配下で描画されるため、要素は2階層分インデント
+    INDENT_DEPTH = 2
+
     def is_target(self, blocks: list[Block]) -> TypeGuard[list[Block]]:
         return all([isinstance(block, CodeBlock) for block in blocks])
 
     def convert(self, blocks: list[CodeBlock]) -> CodeBlock:
         # コードブロックはpre, codeタグの中でひとまとめに記述するため、統合
+        # 先頭要素はHTMLへ出力する必要がないので、除外
         # TODO 将来的には、```<language>の部分からhighlight jsのクラス属性を組み立てられるようにしたい
-        children = [PlainBlock(Plain(), block.children) for block in blocks]
+        children = [PlainBlock(style=Plain(), indent_depth=self.INDENT_DEPTH, children=block.children)
+                    for block in blocks[1:]]
         return CodeBlock(CodeBlockStyle(), children=children)
-

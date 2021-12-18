@@ -19,22 +19,22 @@ class TestBlockConverter:
         ('lines', 'expected'),
         [
             (['今日はいい天気です。', '日記を終わります。'],
-             ('[[Plain: | Child of Plain -> Plain: text=今日はいい天気です。], '
-              '[Plain: | Child of Plain -> Plain: text=日記を終わります。]]')),
+             ('[[Plain: indent_depth=0 | Child of Plain -> Plain: text=今日はいい天気です。], '
+              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=日記を終わります。]]')),
 
             (['> いい感じの言葉を', '> 引用します。'],
              ('[[Quote: | Child of Quote -> '
-              '[Plain: | Child of Plain -> Plain: text=いい感じの言葉を]'
+              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=いい感じの言葉を]'
               ' | Child of Quote -> '
-              '[Plain: | Child of Plain -> Plain: text=引用します。]]]')),
+              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=引用します。]]]')),
 
             (['* 1st', '* 2nd', '* 3rd'],
-             ('[[List: | Child of List -> '
-              '[ListItem: | Child of ListItem -> Plain: text=1st]'
+             ('[[List: indent_depth=0 | Child of List -> '
+              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=1st]'
               ' | Child of List -> '
-              '[ListItem: | Child of ListItem -> Plain: text=2nd]'
+              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=2nd]'
               ' | Child of List -> '
-              '[ListItem: | Child of ListItem -> Plain: text=3rd]]]')),
+              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=3rd]]]')),
         ],
         ids=['plain', 'quote', 'list']
     )
@@ -72,11 +72,12 @@ class TestQuoteConverter:
     @pytest.mark.parametrize(
         ('lines', 'expected'),
         [
-            (['> quote text'], '[Quote: | Child of Quote -> [Plain: | Child of Plain -> Plain: text=quote text]]'),
+            (['> quote text'],
+             '[Quote: | Child of Quote -> [Plain: indent_depth=0 | Child of Plain -> Plain: text=quote text]]'),
             (['> Pythonは', '> プログラミング言語です'],
              ('[Quote: | Child of Quote -> '
-              '[Plain: | Child of Plain -> Plain: text=Pythonは] | Child of Quote -> '
-              '[Plain: | Child of Plain -> Plain: text=プログラミング言語です]]')
+              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=Pythonは] | Child of Quote -> '
+              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=プログラミング言語です]]')
              ),
         ],
         ids=['single', 'multiple']
@@ -123,11 +124,14 @@ class TestListConverter:
     @pytest.mark.parametrize(
         ('lines', 'expected'),
         [
-            (['- method1'], '[List: | Child of List -> [ListItem: | Child of ListItem -> Plain: text=method1]]'),
+            (['- method1'],
+             ('[List: indent_depth=0 | Child of List -> '
+              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=method1]]')
+             ),
             (['* item1', '* item2'],
-             ('[List: | Child of List -> '
-              '[ListItem: | Child of ListItem -> Plain: text=item1] | Child of List -> '
-              '[ListItem: | Child of ListItem -> Plain: text=item2]]')
+             ('[List: indent_depth=0 | Child of List -> '
+              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=item1] | Child of List -> '
+              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=item2]]')
              ),
         ],
         ids=['single', 'multiple']
@@ -190,17 +194,16 @@ class TestCodeBlockConverter:
             (
                     ['', '# comment', 'instance = Klass()'],
                     ('[CodeBlock: | Child of CodeBlock -> '
-                     '[Plain: | Child of Plain -> Plain: text=] | Child of CodeBlock -> '
-                     '[Plain: | Child of Plain -> Plain: text=# comment]'
+                     '[Plain: indent_depth=2 | Child of Plain -> Plain: text=# comment]'
                      ' | Child of CodeBlock -> '
-                     '[Plain: | Child of Plain -> Plain: text=instance = Klass()]]')
+                     '[Plain: indent_depth=2 | Child of Plain -> Plain: text=instance = Klass()]]')
             ),
             (
-                    ['## [参考](url)', '> 引用ここまで'],
+                    ['', '## [参考](url)', '> 引用ここまで'],
                     ('[CodeBlock: | Child of CodeBlock -> '
-                     '[Plain: | Child of Plain -> Plain: text=## [参考](url)]'
+                     '[Plain: indent_depth=2 | Child of Plain -> Plain: text=## [参考](url)]'
                      ' | Child of CodeBlock -> '
-                     '[Plain: | Child of Plain -> Plain: text=> 引用ここまで]]')
+                     '[Plain: indent_depth=2 | Child of Plain -> Plain: text=> 引用ここまで]]')
             ),
         ],
         ids=['code', 'not parsed']

@@ -1,4 +1,20 @@
-from app.element.block import Block, HeadingBlock, QuoteBlock, ListBlock, ListItemBlock, CodeBlock
+from app.element.block import Block, PlainBlock, HeadingBlock, QuoteBlock, ListBlock, ListItemBlock, CodeBlock
+
+from app.settings import setting
+
+# 全体で参照する設定値
+LINE_BREAK = setting['newline_code']
+INDENT = setting['indent']
+
+
+def get_indent_text_from_depth(depth: int):
+    """
+    インデント文字列を階層の深さから取得
+
+    :param depth: インデント階層の深さ
+    :return: インデントを表現する文字列
+    """
+    return ''.join([INDENT for _ in range(depth)])
 
 
 class BlockBuilder:
@@ -23,7 +39,8 @@ class BlockBuilder:
                 return builder.build(block, child_text)
 
         # Plain
-        return child_text
+        if isinstance(block, PlainBlock):
+            return get_indent_text_from_depth(block.indent_depth) + child_text
 
 
 class IBuilder:
@@ -54,7 +71,15 @@ class HeadingBuilder(IBuilder):
 
     HEADING_EXPRESSION = '{h}'
     TEXT_EXPRESSION = '{text}'
-    TEMPLATE = f'<{HEADING_EXPRESSION}>{TEXT_EXPRESSION}</{HEADING_EXPRESSION}>'
+    # example
+    # <h2>
+    #     概要
+    # </h2>
+    TEMPLATE = (
+        f'<{HEADING_EXPRESSION}>{LINE_BREAK}'
+        f'{INDENT}{TEXT_EXPRESSION}{LINE_BREAK}'
+        f'</{HEADING_EXPRESSION}>'
+    )
 
     def is_target(self, block: Block) -> bool:
         return isinstance(block, HeadingBlock)
@@ -68,10 +93,9 @@ class HeadingBuilder(IBuilder):
         :return: HTMLのヘッダタグを含む文字列
         """
 
-        heading_size = f'h{block.style.size}'
-        # <h~>text</h~> ※ ~はヘッダの大きさ
+        heading_tag = f'h{block.style.size}'
         heading = self.TEMPLATE.replace(
-            self.HEADING_EXPRESSION, heading_size
+            self.HEADING_EXPRESSION, heading_tag
         ).replace(
             self.TEXT_EXPRESSION, child_text
         )
@@ -83,7 +107,15 @@ class QuoteBuilder(IBuilder):
     """ blockquote(引用)タグの組み立てを責務に持つ """
 
     TEXT_EXPRESSION = '{text}'
-    TEMPLATE = f'<blockquote>{TEXT_EXPRESSION}</blockquote>'
+    # example
+    # <blockquote>
+    #     引用
+    # </blockquote>
+    TEMPLATE = (
+        f'<blockquote>{LINE_BREAK}'
+        f'{INDENT}{TEXT_EXPRESSION}{LINE_BREAK}'
+        f'</blockquote>'
+    )
 
     def is_target(self, block: Block) -> bool:
         return isinstance(block, QuoteBlock)
@@ -97,7 +129,6 @@ class QuoteBuilder(IBuilder):
         :return: HTMLのblockquoteタグを含む文字列
         """
 
-        # <blockquote>text</blockquote>
         blockquote = self.TEMPLATE.replace(
             self.TEXT_EXPRESSION, child_text
         )
@@ -109,7 +140,18 @@ class ListBuilder(IBuilder):
     """ ul(リスト)タグの組み立てを責務に持つ """
 
     TEXT_EXPRESSION = '{text}'
-    TEMPLATE = f'<ul>{TEXT_EXPRESSION}</ul>'
+    # 子の改行/インデントはListItemBuilderが責務を持つ
+    # example
+    # <ul>
+    #     <li>
+    #         list item
+    #     </li>
+    # </ul>
+    TEMPLATE = (
+        f'<ul>{LINE_BREAK}'
+        f'{TEXT_EXPRESSION}'
+        f'</ul>'
+    )
 
     def is_target(self, block: Block) -> bool:
         return isinstance(block, ListBlock)
@@ -124,7 +166,6 @@ class ListBuilder(IBuilder):
         :return: HTMLのulタグを含む文字列
         """
 
-        # <ul>text</ul>
         unordered_list = self.TEMPLATE.replace(
             self.TEXT_EXPRESSION, child_text
         )
@@ -135,8 +176,17 @@ class ListBuilder(IBuilder):
 class ListItemBuilder(IBuilder):
     """ li(リスト子要素)タグの組み立てを責務に持つ """
 
+    INDENT_EXPRESSION = '{indent}'
     TEXT_EXPRESSION = '{text}'
-    TEMPLATE = f'<li>{TEXT_EXPRESSION}</li>'
+    # example
+    # <li>
+    #     item1
+    # </li>
+    TEMPLATE = (
+        f'{INDENT_EXPRESSION}<li>{LINE_BREAK}'
+        f'{INDENT_EXPRESSION}{INDENT}{TEXT_EXPRESSION}{LINE_BREAK}'
+        f'{INDENT_EXPRESSION}</li>'
+    )
 
     def is_target(self, block: Block) -> bool:
         return isinstance(block, ListItemBlock)
@@ -150,8 +200,9 @@ class ListItemBuilder(IBuilder):
         :return: HTMLのliタグを含む文字列
         """
 
-        # <li>text</li>
         list_item = self.TEMPLATE.replace(
+            self.INDENT_EXPRESSION, get_indent_text_from_depth(block.indent_depth)
+        ).replace(
             self.TEXT_EXPRESSION, child_text
         )
 
@@ -162,7 +213,20 @@ class CodeBlockBuilder(IBuilder):
     """ pre, code(コードブロック) 要素の組み立てを責務に持つ """
 
     TEXT_EXPRESSION = '{text}'
-    TEMPLATE = f'<pre><code>{TEXT_EXPRESSION}</code></pre>'
+    # 子要素は複数行に及ぶため、改行/インデントはPlainBlock側が責務を持つ
+    # example
+    # <pre>
+    #     <code>
+    #         const i = 0;
+    #     </code>
+    # </pre>
+    TEMPLATE = (
+        f'<pre>{LINE_BREAK}'
+        f'{INDENT}<code>{LINE_BREAK}'
+        f'{TEXT_EXPRESSION}'
+        f'{INDENT}</code>{LINE_BREAK}'
+        f'</pre>'
+    )
 
     def is_target(self, block: Block) -> bool:
         return isinstance(block, CodeBlock)
@@ -176,7 +240,6 @@ class CodeBlockBuilder(IBuilder):
         :return: HTMLのpre, codeタグを含む文字列
         """
 
-        # <pre><code>text</code></pre>
         code_block = self.TEMPLATE.replace(
             self.TEXT_EXPRESSION, child_text
         )

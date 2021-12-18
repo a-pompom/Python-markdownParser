@@ -12,7 +12,7 @@ class TestMarkdownParser:
         [
             (
                     ['plain text'],
-                    '[Plain: | Child of Plain -> Plain: text=plain text]',
+                    '[Plain: indent_depth=0 | Child of Plain -> Plain: text=plain text]',
             ),
             (
                     ['## awesome heading'],
@@ -24,14 +24,14 @@ class TestMarkdownParser:
             ),
             (
                     ['記号`!`は否定を表現します。'],
-                    ('[Plain: | '
+                    ('[Plain: indent_depth=0 | '
                      'Child of Plain -> Plain: text=記号 | '
                      'Child of Plain -> Code: text=! | '
                      'Child of Plain -> Plain: text=は否定を表現します。]')
             ),
             (
                     ['![image](https://avatars.githubusercontent.com/u/43694794?v=4)'],
-                    ('[Plain: | '
+                    ('[Plain: indent_depth=0 | '
                      'Child of Plain -> Image: src=https://avatars.githubusercontent.com/u/43694794?v=4, alt=image]')
             ),
         ],
@@ -58,7 +58,7 @@ class TestMarkdownParser:
                     ['### サンプルコード', '```', '# Pythonのコメント', '```', '#### 上はサンプルコードです'],
                     ['[Heading: size=3 | Child of Heading -> Plain: text=サンプルコード]',
                      '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
-                     '[Plain: | Child of Plain -> Plain: text=# Pythonのコメント]',
+                     '[Plain: indent_depth=0 | Child of Plain -> Plain: text=# Pythonのコメント]',
                      '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
                      '[Heading: size=4 | Child of Heading -> Plain: text=上はサンプルコードです]']
             ),
@@ -67,8 +67,8 @@ class TestMarkdownParser:
                     ['> コードが始まります', '```', '## コードを閉じるのを忘れました', '[まだコードです](url)'],
                     ['[Quote: | Child of Quote -> Plain: text=コードが始まります]',
                      '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
-                     '[Plain: | Child of Plain -> Plain: text=## コードを閉じるのを忘れました]',
-                     '[Plain: | Child of Plain -> Plain: text=[まだコードです](url)]']
+                     '[Plain: indent_depth=0 | Child of Plain -> Plain: text=## コードを閉じるのを忘れました]',
+                     '[Plain: indent_depth=0 | Child of Plain -> Plain: text=[まだコードです](url)]']
             ),
         ],
         ids=['no code block', 'code block with end symbol', 'no end symbol']

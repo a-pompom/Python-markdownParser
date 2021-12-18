@@ -5,7 +5,13 @@ from app.html.block_builder import BlockBuilder, HeadingBuilder, QuoteBuilder, L
 from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser
 from app.markdown.inline_parser import InlineParser
 
+from app.settings import setting
+
 from tests.factory.block_factory import ListItemFactory, CodeBlockFactory
+
+# よく使う設定値
+LINE_BREAK = setting['newline_code']
+INDENT = setting['indent']
 
 
 class TestBlockBuilder:
@@ -15,9 +21,29 @@ class TestBlockBuilder:
     @pytest.mark.parametrize(
         ('block_text', 'child_text', 'expected'),
         [
-            ('plain text', 'plain text', 'plain text'),
-            ('# 概要', '概要', '<h1>概要</h1>'),
-            ('> と言いました', 'と言いました', '<blockquote>と言いました</blockquote>')
+            (
+                    'plain text',
+                    'plain text',
+                    f'plain text'
+            ),
+            (
+                    '# 概要',
+                    '概要',
+                    (
+                            f'<h1>{LINE_BREAK}'
+                            f'{INDENT}概要{LINE_BREAK}'
+                            f'</h1>'
+                    )
+            ),
+            (
+                    '> と言いました',
+                    'と言いました',
+                    (
+                            f'<blockquote>{LINE_BREAK}'
+                            f'{INDENT}と言いました{LINE_BREAK}'
+                            f'</blockquote>'
+                    )
+            )
         ],
         ids=['plain', 'heading', 'quote'])
     def test_build(self, block_text: str, child_text: str, expected: str):
@@ -54,8 +80,24 @@ class TestHeadingBuilder:
     @pytest.mark.parametrize(
         ('block_text', 'child_text', 'expected'),
         [
-            ('# first heading', 'first heading', '<h1>first heading</h1>'),
-            ('#### 補足: これは補足です', '補足: これは補足です', '<h4>補足: これは補足です</h4>')
+            (
+                    '# first heading',
+                    'first heading',
+                    (
+                            f'<h1>{LINE_BREAK}'
+                            f'{INDENT}first heading{LINE_BREAK}'
+                            f'</h1>'
+                    )
+            ),
+            (
+                    '#### 補足: これは補足です',
+                    '補足: これは補足です',
+                    (
+                            f'<h4>{LINE_BREAK}'
+                            f'{INDENT}補足: これは補足です{LINE_BREAK}'
+                            f'</h4>'
+                    )
+            )
         ],
         ids=['first', '4th'])
     def test_build(self, block_text: str, child_text: str, expected: str):
@@ -91,7 +133,14 @@ class TestQuoteBuilder:
     @pytest.mark.parametrize(
         ('block_text', 'child_text', 'expected'),
         [
-            ('> それが問題です', 'それが問題です', '<blockquote>それが問題です</blockquote>')
+            (
+                    '> それが問題です', 'それが問題です',
+                    (
+                            f'<blockquote>{LINE_BREAK}'
+                            f'{INDENT}それが問題です{LINE_BREAK}'
+                            f'</blockquote>'
+                    )
+            )
         ],
         ids=['quote']
     )
@@ -126,10 +175,19 @@ class TestListBuilder:
         assert actual == expected
 
     # ビルド結果
+    # 要素自体の改行/インデントは子要素のビルダが担う
+    # これは、子要素のliは複数行に及び、子要素1行分に対してのみ改行やインデントを適用するとかえって扱いづらくなるためである
     @pytest.mark.parametrize(
         ('block_text', 'child_text', 'expected'),
         [
-            ('- no.1', 'no.1', '<ul>no.1</ul>')
+            (
+                    '- no.1', 'no.1',
+                    (
+                            f'<ul>{LINE_BREAK}'
+                            f'no.1'
+                            f'</ul>'
+                    )
+            )
         ],
         ids=['list']
     )
@@ -173,10 +231,18 @@ class TestListItemBuilder:
         assert actual is False
 
     # ビルド結果
+    # li要素はulの子となることが前提なので、インデント階層を含む
     @pytest.mark.parametrize(
         ('child_text', 'expected'),
         [
-            ('やりたいことその1', '<li>やりたいことその1</li>')
+            (
+                    'やりたいことその1',
+                    (
+                            f'{INDENT}<li>{LINE_BREAK}'
+                            f'{INDENT}{INDENT}やりたいことその1{LINE_BREAK}'
+                            f'{INDENT}</li>'
+                    )
+            )
         ],
         ids=['list item']
     )
@@ -228,11 +294,31 @@ class TestCodeBlockBuilder:
         assert actual is False
 
     # pre, codeタグ文字列の組み立て
+    # 要素自体の改行/インデントはconverterが責務を持つ
+    # これは、子要素は複数行に及び、子要素1行分に対してのみ改行やインデントを適用するとかえって扱いづらくなるためである
     @pytest.mark.parametrize(
         ('text', 'expected'),
         [
-            ('List<String> list;', '<pre><code>List<String> list;</code></pre>'),
-            ('## [参考](url)', '<pre><code>## [参考](url)</code></pre>'),
+            (
+                    'List<String> list;',
+                    (
+                            f'<pre>{LINE_BREAK}'
+                            f'{INDENT}<code>{LINE_BREAK}'
+                            f'List<String> list;'
+                            f'{INDENT}</code>{LINE_BREAK}'
+                            f'</pre>'
+                    )
+            ),
+            (
+                    '## [参考](url)',
+                    (
+                            f'<pre>{LINE_BREAK}'
+                            f'{INDENT}<code>{LINE_BREAK}'
+                            f'## [参考](url)'
+                            f'{INDENT}</code>{LINE_BREAK}'
+                            f'</pre>'
+                    )
+            ),
 
         ],
         ids=['code', 'markdown text']

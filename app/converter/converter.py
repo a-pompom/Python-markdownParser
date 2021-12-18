@@ -13,10 +13,7 @@ class Converter:
 
     def convert(self, markdown_result: ParseResult) -> ParseResult:
         """
-        引用やリストのような、複数行からなるBlock要素を1つに統合\n
-        同種のBlock要素が複数行に分かれていると、ビルダで開始・終了タグを設定する処理が複雑になる\n
-        1つにまとめられていれば、子に対して開始・終了タグを設定するだけで完結できるので、\n
-        統合の責務をビルダに代わってコンバータが担う
+        ビルダの責務を小さくするため、マークダウンのパース結果をビルダが解釈しやすい形へ変換
 
         :param markdown_result: 変換対象のマークダウンパース結果
         :return: 変換結果

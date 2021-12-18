@@ -22,8 +22,8 @@ class TestSplitToConvertTarget:
         [
             (
                     ['first plain text', 'second plain text'],
-                    [['[Plain: | Child of Plain -> Plain: text=first plain text]',
-                      '[Plain: | Child of Plain -> Plain: text=second plain text]']]
+                    [['[Plain: indent_depth=0 | Child of Plain -> Plain: text=first plain text]',
+                      '[Plain: indent_depth=0 | Child of Plain -> Plain: text=second plain text]']]
             ),
             (
                     ['> 私は昨日', '> こう言いました'],
@@ -59,7 +59,7 @@ class TestSplitToConvertTarget:
             (
                     ['> 昨日私はこう言いました', '一日が過ぎました', '> 今日私はこう言いました', '> 帰りたい'],
                     [['[Quote: | Child of Quote -> Plain: text=昨日私はこう言いました]'],
-                     ['[Plain: | Child of Plain -> Plain: text=一日が過ぎました]'],
+                     ['[Plain: indent_depth=0 | Child of Plain -> Plain: text=一日が過ぎました]'],
                      ['[Quote: | Child of Quote -> Plain: text=今日私はこう言いました]',
                       '[Quote: | Child of Quote -> Plain: text=帰りたい]']
                      ]
