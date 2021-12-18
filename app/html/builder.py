@@ -3,6 +3,8 @@ from app.element.inline import Inline
 from app.html.block_builder import BlockBuilder
 from app.html.inline_builder import InlineBuilder
 
+from app.settings import setting
+
 
 class HtmlBuilder:
     """ マークダウンのパース結果からHTML文字列を組み立てることを責務に持つ """
@@ -50,4 +52,4 @@ class HtmlBuilder:
 
         # childrenの組み立て結果文字列とBlock要素の組み立て結果を組み合わせることで、
         # Block要素のHTML文字列への変換を実現
-        return self._block_builder.build(block, child_text)
+        return self._block_builder.build(block, child_text) + setting['newline_code']

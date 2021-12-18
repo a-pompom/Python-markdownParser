@@ -19,14 +19,7 @@ def create_repr_children(block_name: str, children: Children) -> str:
     repr_children = ['']
 
     for child in children:
-        # Inlineはそのまま子要素として追加
-        if isinstance(child, Inline):
-            repr_children.append(f'Child of {block_name} -> {repr(child)}')
-            continue
-
-        # Block要素はBlockをreprで評価した結果が子要素となる
-        if isinstance(child, Block):
-            repr_children.append(f'Child of {block_name} -> {repr(child)}')
+        repr_children.append(f'Child of {block_name} -> {repr(child)}')
 
     return ' | '.join(repr_children)
 
@@ -51,10 +44,13 @@ class ParseResult:
 class PlainBlock(Block):
     """ どの記法にも属さない要素 """
     style: Plain
+    # コードブロックの中ではpre, codeタグ以下で描画されることになる
+    # このとき階層が生じ得るので、インデント階層を持たせておく
+    indent_depth: int = 0
 
     def __repr__(self):
         child_repr_text = create_repr_children('Plain', self.children)
-        return f'[Plain:{child_repr_text}]'
+        return f'[Plain: indent_depth={self.indent_depth}{child_repr_text}]'
 
 
 @dataclasses.dataclass
@@ -81,20 +77,23 @@ class QuoteBlock(Block):
 class ListBlock(Block):
     """ リスト要素 """
     style: ListStyle
+    indent_depth: int = 0
 
     def __repr__(self):
         child_repr_text = create_repr_children('List', self.children)
-        return f'[List:{child_repr_text}]'
+        return f'[List: indent_depth={self.indent_depth}{child_repr_text}]'
 
 
 @dataclasses.dataclass
 class ListItemBlock(Block):
     """ リスト子要素 """
     style: ListItem
+    # リスト親要素の階層で描画されることから、必ず階層は1つ下より深くなる
+    indent_depth: int = 1
 
     def __repr__(self):
         child_repr_text = create_repr_children('ListItem', self.children)
-        return f'[ListItem:{child_repr_text}]'
+        return f'[ListItem: indent_depth={self.indent_depth}{child_repr_text}]'
 
 
 @dataclasses.dataclass

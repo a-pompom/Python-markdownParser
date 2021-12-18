@@ -1,6 +1,7 @@
 import dataclasses
 
 
+@dataclasses.dataclass
 class Style:
     """ マークダウン・HTMLの記法の種類を表現 """
 
