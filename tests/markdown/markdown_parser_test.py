@@ -34,8 +34,13 @@ class TestMarkdownParser:
                     ('[Paragraph: indent_depth=0 | '
                      'Child of Paragraph -> Image: src=https://avatars.githubusercontent.com/u/43694794?v=4, alt=image]')
             ),
+            (
+                    ['---'],
+                    ('[Paragraph: indent_depth=0 | '
+                     'Child of Paragraph -> HorizontalRule: ]')
+            ),
         ],
-        ids=['plain', 'heading', 'quote', 'code', 'image'])
+        ids=['plain', 'heading', 'quote', 'code', 'image', 'horizontal rule'])
     def test_parse(self, lines: list[str], expected: str):
         # GIVEN
         sut = MarkdownParser()

@@ -1,5 +1,5 @@
 from app.regex import regex
-from app.element.inline import Inline, PlainInline, LinkInline, CodeInline, ImageInline
+from app.element.inline import Inline, PlainInline, LinkInline, CodeInline, ImageInline, HorizontalRuleInline
 
 
 class InlineParser:
@@ -7,7 +7,7 @@ class InlineParser:
 
     def __init__(self):
         # 各変換処理を表現する要素を初期化
-        self.parsers: list[IParser] = [LinkParser(), CodeParser(), ImageParser()]
+        self.parsers: list[IParser] = [LinkParser(), CodeParser(), ImageParser(), HorizontalRuleParser()]
 
     def parse(self, text: str) -> list[Inline]:
         """
@@ -159,6 +159,31 @@ class ImageParser(IParser):
 
         # imgタグは子要素のテキストを持たない
         return ImageInline(src=src, alt=alt, text='')
+
+
+class HorizontalRuleParser(IParser):
+    """ 水平罫線要素の解釈を責務に持つ """
+
+    # ex) ---
+    PATTERN = r'---'
+    EXTRACT_PATTERN = r'(---)'
+
+    def is_target(self, markdown_text: str) -> bool:
+        return regex.contain(self.EXTRACT_PATTERN, markdown_text)
+
+    def extract_text(self, markdown_text: str) -> tuple[str, str, str]:
+        inline = regex.extract_from_group(self.EXTRACT_PATTERN, markdown_text, [1])
+        return '', inline, ''
+
+    def parse(self, markdown_text: str) -> HorizontalRuleInline:
+        """
+        水平罫線を表すInline要素を生成
+
+        :param markdown_text: 処理対象文字列
+        :return: 水平罫線を表すInline要素
+        """
+
+        return HorizontalRuleInline(text='')
 
 
 # 特殊な要件に応じたInline要素の生成
