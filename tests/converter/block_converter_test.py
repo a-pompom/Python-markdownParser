@@ -19,14 +19,14 @@ class TestBlockConverter:
         ('lines', 'expected'),
         [
             (['今日はいい天気です。', '日記を終わります。'],
-             ('[[Plain: indent_depth=0 | Child of Plain -> Plain: text=今日はいい天気です。], '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=日記を終わります。]]')),
+             ('[[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=今日はいい天気です。], '
+              '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=日記を終わります。]]')),
 
             (['> いい感じの言葉を', '> 引用します。'],
              ('[[Quote: | Child of Quote -> '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=いい感じの言葉を]'
+              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=いい感じの言葉を]'
               ' | Child of Quote -> '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=引用します。]]]')),
+              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=引用します。]]]')),
 
             (['* 1st', '* 2nd', '* 3rd'],
              ('[[List: indent_depth=0 | Child of List -> '
@@ -73,11 +73,11 @@ class TestQuoteConverter:
         ('lines', 'expected'),
         [
             (['> quote text'],
-             '[Quote: | Child of Quote -> [Plain: indent_depth=0 | Child of Plain -> Plain: text=quote text]]'),
+             '[Quote: | Child of Quote -> [Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=quote text]]'),
             (['> Pythonは', '> プログラミング言語です'],
              ('[Quote: | Child of Quote -> '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=Pythonは] | Child of Quote -> '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=プログラミング言語です]]')
+              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=Pythonは] | Child of Quote -> '
+              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=プログラミング言語です]]')
              ),
         ],
         ids=['single', 'multiple']

@@ -1,4 +1,5 @@
-from app.element.block import Block, PlainBlock, HeadingBlock, QuoteBlock, ListBlock, ListItemBlock, CodeBlock
+from app.element.block import Block, PlainBlock, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, ListItemBlock, \
+    CodeBlock
 
 from app.settings import setting
 
@@ -21,8 +22,8 @@ class BlockBuilder:
     """ Block要素をもとに対応するHTML文字列を組み立てることを責務に持つ"""
 
     def __init__(self):
-        self._builders: list[IBuilder] = [HeadingBuilder(), QuoteBuilder(), ListItemBuilder(), ListBuilder(),
-                                          CodeBlockBuilder()]
+        self._builders: list[IBuilder] = [ParagraphBuilder(), HeadingBuilder(), QuoteBuilder(), ListItemBuilder(),
+                                          ListBuilder(), CodeBlockBuilder()]
 
     def build(self, block: Block, child_text: str) -> str:
         """
@@ -66,6 +67,41 @@ class IBuilder:
         raise NotImplementedError
 
 
+class ParagraphBuilder(IBuilder):
+    """ pタグ(段落)の組み立てを責務に持つ """
+
+    INDENT_EXPRESSION = '{indent}'
+    TEXT_EXPRESSION = '{text}'
+    # example
+    # <p>
+    #     これから説明します。
+    # </p>
+    TEMPLATE = (
+        f'{INDENT_EXPRESSION}<p>{LINE_BREAK}'
+        f'{INDENT_EXPRESSION}{INDENT}{TEXT_EXPRESSION}{LINE_BREAK}'
+        f'{INDENT_EXPRESSION}</p>'
+    )
+
+    def is_target(self, block: Block) -> bool:
+        return isinstance(block, ParagraphBlock)
+
+    def build(self, block: ParagraphBlock, child_text: str) -> str:
+        """
+        段落要素のHTML文字列を組み立て
+
+        :param block: 組み立て元Block要素
+        :param child_text: 子要素文字列
+        :return: HTMLのpタグを含む文字列
+        """
+
+        paragraph = self.TEMPLATE.replace(
+            self.INDENT_EXPRESSION, get_indent_text_from_depth(block.indent_depth)
+        ).replace(
+            self.TEXT_EXPRESSION, child_text
+        )
+        return paragraph
+
+
 class HeadingBuilder(IBuilder):
     """ hタグ(ヘッダ)の組み立てを責務に持つ """
 
@@ -106,6 +142,7 @@ class HeadingBuilder(IBuilder):
 class QuoteBuilder(IBuilder):
     """ blockquote(引用)タグの組み立てを責務に持つ """
 
+    # 子が複数行存在するため、改行やインデントは、コンバータや、他のビルダが責務を持つ
     TEXT_EXPRESSION = '{text}'
     # example
     # <blockquote>
@@ -113,7 +150,7 @@ class QuoteBuilder(IBuilder):
     # </blockquote>
     TEMPLATE = (
         f'<blockquote>{LINE_BREAK}'
-        f'{INDENT}{TEXT_EXPRESSION}{LINE_BREAK}'
+        f'{TEXT_EXPRESSION}'
         f'</blockquote>'
     )
 

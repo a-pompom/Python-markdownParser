@@ -40,14 +40,22 @@ class ParseResult:
 
 @dataclasses.dataclass
 class PlainBlock(Block):
-    """ どの記法にも属さない要素 """
-    # コードブロックの中ではpre, codeタグ以下で描画されることになる
-    # このとき階層が生じ得るので、インデント階層を持たせておく
+    """ どのHTMLタグにも変換されない要素 コードブロックで記述される """
     indent_depth: int = 0
 
     def __repr__(self):
         child_repr_text = create_repr_children('Plain', self.children)
         return f'[Plain: indent_depth={self.indent_depth}{child_repr_text}]'
+
+
+@dataclasses.dataclass
+class ParagraphBlock(Block):
+    """ 段落要素 """
+    indent_depth: int = 0
+
+    def __repr__(self):
+        child_repr_text = create_repr_children('Paragraph', self.children)
+        return f'[Paragraph: indent_depth={self.indent_depth}{child_repr_text}]'
 
 
 @dataclasses.dataclass
