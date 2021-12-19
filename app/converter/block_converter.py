@@ -1,5 +1,5 @@
 from typing import TypeGuard
-from app.element.block import Block, PlainBlock, QuoteBlock, ListBlock, ListItemBlock, CodeBlock
+from app.element.block import Block, PlainBlock, ParagraphBlock, QuoteBlock, ListBlock, ListItemBlock, CodeBlock
 
 
 class BlockConverter:
@@ -53,11 +53,14 @@ class IConverter:
 class QuoteConverter(IConverter):
     """ 引用要素を組み立てることを責務に持つ """
 
+    # blockquoteタグ配下で描画されるため、要素は1階層分インデント
+    INDENT_DEPTH = 1
+
     def is_target(self, blocks: list[Block]) -> TypeGuard[list[QuoteBlock]]:
         return all([isinstance(block, QuoteBlock) for block in blocks])
 
     def convert(self, blocks: list[QuoteBlock]) -> QuoteBlock:
-        children = [PlainBlock(children=block.children) for block in blocks]
+        children = [ParagraphBlock(indent_depth=self.INDENT_DEPTH, children=block.children) for block in blocks]
         return QuoteBlock(children=children)
 
 

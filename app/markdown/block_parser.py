@@ -1,5 +1,6 @@
 from app.regex import regex
-from app.element.block import Children, Block, PlainBlock, HeadingBlock, QuoteBlock, ListBlock, CodeBlock
+from app.element.block import Children, Block, PlainBlock, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, \
+    CodeBlock
 
 # 正規表現のグループのうち、Blockの記法に属さない箇所のインデックス
 # Inlineを解釈する処理をBlockとは独立させるために利用
@@ -65,7 +66,7 @@ class BlockParser:
             if parser.is_target(line):
                 return parser.parse(line, children)
 
-        return PlainBlock(children)
+        return ParagraphBlock(children)
 
 
 class IParser:

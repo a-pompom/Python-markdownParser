@@ -2,7 +2,7 @@ import os
 import sys
 
 from app.markdown.parser import MarkdownParser
-from app.converter import Converter
+from app.converter.converter import Converter
 from app.html.builder import HtmlBuilder
 
 IN_AND_OUT_ARG_COUNT = 3
@@ -43,7 +43,8 @@ def parse_md_to_html(in_file_path: str, out_file_path: str):
     # マークダウンをパース
     with open(in_file_path, 'r') as f:
         markdown_parser = MarkdownParser()
-        markdown_parse_result = markdown_parser.parse(f.readlines())
+        # 改行コードはHTMLを組み立てるときに制御するので、入力からは除外しておく
+        markdown_parse_result = markdown_parser.parse(f.read().splitlines())
 
     # マークダウン・HTMLを中継
     converter = Converter()
