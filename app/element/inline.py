@@ -40,3 +40,11 @@ class ImageInline(Inline):
 
     def __repr__(self):
         return f'Image: src={self.src}, alt={self.alt}'
+
+
+@dataclasses.dataclass
+class HorizontalRuleInline(Inline):
+    """ hrタグと対応する水平罫線要素を保持 """
+
+    def __repr__(self):
+        return f'HorizontalRule: '
