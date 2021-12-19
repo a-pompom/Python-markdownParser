@@ -12,7 +12,7 @@ class TestMarkdownParser:
         [
             (
                     ['plain text'],
-                    '[Plain: indent_depth=0 | Child of Plain -> Plain: text=plain text]',
+                    '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=plain text]',
             ),
             (
                     ['## awesome heading'],
@@ -24,15 +24,15 @@ class TestMarkdownParser:
             ),
             (
                     ['記号`!`は否定を表現します。'],
-                    ('[Plain: indent_depth=0 | '
-                     'Child of Plain -> Plain: text=記号 | '
-                     'Child of Plain -> Code: text=! | '
-                     'Child of Plain -> Plain: text=は否定を表現します。]')
+                    ('[Paragraph: indent_depth=0 | '
+                     'Child of Paragraph -> Plain: text=記号 | '
+                     'Child of Paragraph -> Code: text=! | '
+                     'Child of Paragraph -> Plain: text=は否定を表現します。]')
             ),
             (
                     ['![image](https://avatars.githubusercontent.com/u/43694794?v=4)'],
-                    ('[Plain: indent_depth=0 | '
-                     'Child of Plain -> Image: src=https://avatars.githubusercontent.com/u/43694794?v=4, alt=image]')
+                    ('[Paragraph: indent_depth=0 | '
+                     'Child of Paragraph -> Image: src=https://avatars.githubusercontent.com/u/43694794?v=4, alt=image]')
             ),
         ],
         ids=['plain', 'heading', 'quote', 'code', 'image'])

@@ -13,7 +13,7 @@ class TestConverter:
         [
             (['# 概要', 'これは概要です。'],
              ('[Heading: size=1 | Child of Heading -> Plain: text=概要] '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=これは概要です。]')),
+              '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=これは概要です。]')),
         ]
     )
     def test_no_convert(self, lines: list[str], expected: str):
@@ -25,30 +25,30 @@ class TestConverter:
         # THEN
         assert repr(actual) == expected
 
-    # List要素を1つに統合できるか
+    # 要素を1つに統合できるか
     @pytest.mark.parametrize(
         ('lines', 'expected'),
         [
             (['> いい感じのことを', '> 言っているようです'],
              ('[Quote: | Child of Quote -> '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=いい感じのことを]'
+              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=いい感じのことを]'
               ' | Child of Quote -> '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=言っているようです]]')),
+              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=言っているようです]]')),
 
             (['## Pythonとは', '> Pythonとは', '> プログラミング言語です', '小休止', '> 再開'],
              ('[Heading: size=2 | Child of Heading -> Plain: text=Pythonとは] '
               '[Quote: | Child of Quote -> '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=Pythonとは]'
+              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=Pythonとは]'
               ' | Child of Quote -> '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=プログラミング言語です]] '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=小休止] '
+              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=プログラミング言語です]] '
+              '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=小休止] '
               '[Quote: | Child of Quote -> '
-              '[Plain: indent_depth=0 | Child of Plain -> Plain: text=再開]]'))
+              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=再開]]'))
 
         ],
         ids=['only one type element', 'mixed']
     )
-    def test_convert_list(self, lines: list[str], expected: str):
+    def test_convert(self, lines: list[str], expected: str):
         # GIVEN
         sut = Converter()
         markdown_result = MarkdownParser().parse(lines)
@@ -57,6 +57,7 @@ class TestConverter:
         # THEN
         assert repr(actual) == expected
 
+    # コードブロック要素の範囲内を1つに統合できるか
     @pytest.mark.parametrize(
         ('lines', 'expected'),
         [

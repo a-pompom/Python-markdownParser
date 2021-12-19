@@ -30,7 +30,7 @@ class TestBlockParser:
             (
                     'plain text',
                     'plain text',
-                    '[Plain: indent_depth=0 | Child of Plain -> Plain: text=plain text]'
+                    '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=plain text]'
             ),
             (
                     '## awesome heading',

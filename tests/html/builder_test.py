@@ -20,7 +20,7 @@ class TestHtmlBuilder:
         [
             (
                     MarkdownParser().parse(['plain text']),
-                    f'plain text{LINE_BREAK}'
+                    f'<p>{LINE_BREAK}{INDENT}plain text{LINE_BREAK}</p>{LINE_BREAK}'
             ),
 
             (
@@ -35,7 +35,9 @@ class TestHtmlBuilder:
             (
                     MarkdownParser().parse(['[参考](https://www.google.com/)']),
                     (
-                            f'<a href="https://www.google.com/">参考</a>{LINE_BREAK}'
+                            f'<p>{LINE_BREAK}'
+                            f'{INDENT}<a href="https://www.google.com/">参考</a>{LINE_BREAK}'
+                            f'</p>{LINE_BREAK}'
                     )
             ),
 
@@ -52,6 +54,39 @@ class TestHtmlBuilder:
     def test_build(self, parse_result: ParseResult, expected: str):
         # GIVEN
         sut = HtmlBuilder()
+        # WHEN
+        actual = sut.build(parse_result)
+        # THEN
+        assert actual == expected
+
+    # 引用要素の組み立て
+    @pytest.mark.parametrize(
+        ('lines', 'expected'),
+        [
+            (
+                    ['> 私は昨日こう言いました', '> 帰りたいなぁ', '> 引用終わり'],
+                    (
+                            f'<blockquote>{LINE_BREAK}'
+                            f'{INDENT}<p>{LINE_BREAK}'
+                            f'{INDENT}{INDENT}私は昨日こう言いました{LINE_BREAK}'
+                            f'{INDENT}</p>{LINE_BREAK}'
+
+                            f'{INDENT}<p>{LINE_BREAK}'
+                            f'{INDENT}{INDENT}帰りたいなぁ{LINE_BREAK}'
+                            f'{INDENT}</p>{LINE_BREAK}'
+
+                            f'{INDENT}<p>{LINE_BREAK}'
+                            f'{INDENT}{INDENT}引用終わり{LINE_BREAK}'
+                            f'{INDENT}</p>{LINE_BREAK}'
+
+                            f'</blockquote>{LINE_BREAK}'
+                    )
+            )
+        ]
+    )
+    def test_build_quote(self, lines: list[str], expected: str):
+        sut = HtmlBuilder()
+        parse_result = Converter().convert(MarkdownParser().parse(lines))
         # WHEN
         actual = sut.build(parse_result)
         # THEN

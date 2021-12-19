@@ -24,7 +24,7 @@ class TestBlockBuilder:
             (
                     'plain text',
                     'plain text',
-                    f'plain text'
+                    f'<p>{LINE_BREAK}{INDENT}plain text{LINE_BREAK}</p>'
             ),
             (
                     '# 概要',
@@ -40,7 +40,7 @@ class TestBlockBuilder:
                     'と言いました',
                     (
                             f'<blockquote>{LINE_BREAK}'
-                            f'{INDENT}と言いました{LINE_BREAK}'
+                            f'と言いました'
                             f'</blockquote>'
                     )
             )
@@ -137,7 +137,7 @@ class TestQuoteBuilder:
                     '> それが問題です', 'それが問題です',
                     (
                             f'<blockquote>{LINE_BREAK}'
-                            f'{INDENT}それが問題です{LINE_BREAK}'
+                            f'それが問題です'
                             f'</blockquote>'
                     )
             )
