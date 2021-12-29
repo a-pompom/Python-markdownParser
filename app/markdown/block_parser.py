@@ -1,6 +1,6 @@
 from app.regex import regex
 from app.element.block import Children, Block, PlainBlock, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, \
-    CodeBlock
+    CodeBlock, HorizontalRuleBlock
 
 # 正規表現のグループのうち、Blockの記法に属さない箇所のインデックス
 # Inlineを解釈する処理をBlockとは独立させるために利用
@@ -37,7 +37,8 @@ class BlockParser:
     """ Block要素と対応するマークダウンの記法を解釈することを責務に持つ """
 
     def __init__(self):
-        self.parsers: list[IParser] = [HeadingParser(), QuoteParser(), ListParser(), CodeBlockParser()]
+        self.parsers: list[IParser] = [HeadingParser(), QuoteParser(), ListParser(), CodeBlockParser(),
+                                       HorizontalRuleParser()]
 
     def extract_inline_text(self, markdown_text: str) -> str:
         """
@@ -189,6 +190,32 @@ class CodeBlockParser(IParser):
         :return: コードブロックを表すBlock要素
         """
         return CodeBlock(children)
+
+
+class HorizontalRuleParser(IParser):
+    """ 水平罫線要素の解釈を責務に持つ """
+
+    # ex) ---
+    PATTERN = r'---'
+    EXTRACT_PATTERN = r'(---)'
+
+    def is_target(self, markdown_text: str) -> bool:
+        return regex.contain(self.EXTRACT_PATTERN, markdown_text)
+
+    def extract_text(self, markdown_text: str) -> str:
+        # 水平罫線はInline要素へ文字列を渡す必要がないため、空文字を返却
+        return ''
+
+    def parse(self, markdown_text: str, children: Children) -> HorizontalRuleBlock:
+        """
+        水平罫線を表すBlock要素を生成
+
+        :param markdown_text: 処理対象行
+        :param children: Inlineパーサによって解釈された要素の集まり
+        :return: 水平罫線を表すBlock要素
+        """
+
+        return HorizontalRuleBlock(children)
 
 
 # 特殊な要件によるBlockの生成

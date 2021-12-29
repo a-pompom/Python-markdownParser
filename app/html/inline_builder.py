@@ -1,4 +1,4 @@
-from app.element.inline import Inline, LinkInline, CodeInline, ImageInline, HorizontalRuleInline
+from app.element.inline import Inline, LinkInline, CodeInline, ImageInline
 from app.settings import setting
 
 
@@ -6,7 +6,7 @@ class InlineBuilder:
     """ Inline要素と対応するHTML文字列を組み立てることを責務に持つ """
 
     def __init__(self):
-        self._builders: list[IBuilder] = [LinkBuilder(), CodeBuilder(), ImageBuilder(), HorizontalRuleBuilder()]
+        self._builders: list[IBuilder] = [LinkBuilder(), CodeBuilder(), ImageBuilder()]
 
     def build(self, inline: Inline) -> str:
         """
@@ -132,23 +132,3 @@ class ImageBuilder(IBuilder):
         )
 
         return img_tag
-
-
-class HorizontalRuleBuilder(IBuilder):
-    """ hrタグで表現される水平罫線要素を生成することを責務に持つ """
-
-    CLASSNAME_EXPRESSION = '{classname}'
-    TEMPLATE = f'<hr class="{CLASSNAME_EXPRESSION}">'
-
-    def is_target(self, inline: Inline) -> bool:
-        return isinstance(inline, HorizontalRuleInline)
-
-    def build(self, inline: HorizontalRuleInline) -> str:
-        """
-        hrタグ文字列を組み立て
-
-        :param inline: 処理対象Inline要素
-        :return: hrタグ文字列
-        """
-
-        return self.TEMPLATE.replace(self.CLASSNAME_EXPRESSION, setting['class_name']['hr'])
