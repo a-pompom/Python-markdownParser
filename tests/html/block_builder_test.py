@@ -24,13 +24,13 @@ class TestBlockBuilder:
             (
                     'plain text',
                     'plain text',
-                    f'<p>{LINE_BREAK}{INDENT}plain text{LINE_BREAK}</p>'
+                    f'<p class="{setting["class_name"]["p"]}">{LINE_BREAK}{INDENT}plain text{LINE_BREAK}</p>'
             ),
             (
                     '# 概要',
                     '概要',
                     (
-                            f'<h1>{LINE_BREAK}'
+                            f'<h1 class="{setting["class_name"]["h1"]}">{LINE_BREAK}'
                             f'{INDENT}概要{LINE_BREAK}'
                             f'</h1>'
                     )
@@ -39,7 +39,7 @@ class TestBlockBuilder:
                     '> と言いました',
                     'と言いました',
                     (
-                            f'<blockquote>{LINE_BREAK}'
+                            f'<blockquote class="{setting["class_name"]["blockquote"]}">{LINE_BREAK}'
                             f'と言いました'
                             f'</blockquote>'
                     )
@@ -84,7 +84,7 @@ class TestHeadingBuilder:
                     '# first heading',
                     'first heading',
                     (
-                            f'<h1>{LINE_BREAK}'
+                            f'<h1 class="{setting["class_name"]["h1"]}">{LINE_BREAK}'
                             f'{INDENT}first heading{LINE_BREAK}'
                             f'</h1>'
                     )
@@ -93,7 +93,7 @@ class TestHeadingBuilder:
                     '#### 補足: これは補足です',
                     '補足: これは補足です',
                     (
-                            f'<h4>{LINE_BREAK}'
+                            f'<h4 class="{setting["class_name"]["h4"]}">{LINE_BREAK}'
                             f'{INDENT}補足: これは補足です{LINE_BREAK}'
                             f'</h4>'
                     )
@@ -136,7 +136,7 @@ class TestQuoteBuilder:
             (
                     '> それが問題です', 'それが問題です',
                     (
-                            f'<blockquote>{LINE_BREAK}'
+                            f'<blockquote class="{setting["class_name"]["blockquote"]}">{LINE_BREAK}'
                             f'それが問題です'
                             f'</blockquote>'
                     )
@@ -183,7 +183,7 @@ class TestListBuilder:
             (
                     '- no.1', 'no.1',
                     (
-                            f'<ul>{LINE_BREAK}'
+                            f'<ul class="{setting["class_name"]["ul"]}">{LINE_BREAK}'
                             f'no.1'
                             f'</ul>'
                     )
@@ -238,7 +238,7 @@ class TestListItemBuilder:
             (
                     'やりたいことその1',
                     (
-                            f'{INDENT}<li>{LINE_BREAK}'
+                            f'{INDENT}<li class="{setting["class_name"]["li"]}">{LINE_BREAK}'
                             f'{INDENT}{INDENT}やりたいことその1{LINE_BREAK}'
                             f'{INDENT}</li>'
                     )

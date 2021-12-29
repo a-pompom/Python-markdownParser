@@ -20,13 +20,17 @@ class TestHtmlBuilder:
         [
             (
                     MarkdownParser().parse(['plain text']),
-                    f'<p>{LINE_BREAK}{INDENT}plain text{LINE_BREAK}</p>{LINE_BREAK}'
+                    (
+                            f'<p class="{setting["class_name"]["p"]}">{LINE_BREAK}'
+                            f'{INDENT}plain text{LINE_BREAK}'
+                            f'</p>{LINE_BREAK}'
+                    )
             ),
 
             (
                     MarkdownParser().parse(['#### 課題: 頑張りたい']),
                     (
-                            f'<h4>{LINE_BREAK}'
+                            f'<h4 class="{setting["class_name"]["h4"]}">{LINE_BREAK}'
                             f'{INDENT}課題: 頑張りたい{LINE_BREAK}'
                             f'</h4>{LINE_BREAK}'
                     )
@@ -35,8 +39,8 @@ class TestHtmlBuilder:
             (
                     MarkdownParser().parse(['[参考](https://www.google.com/)']),
                     (
-                            f'<p>{LINE_BREAK}'
-                            f'{INDENT}<a href="https://www.google.com/">参考</a>{LINE_BREAK}'
+                            f'<p class="{setting["class_name"]["p"]}">{LINE_BREAK}'
+                            f'{INDENT}<a href="https://www.google.com/" class="{setting["class_name"]["a"]}">参考</a>{LINE_BREAK}'
                             f'</p>{LINE_BREAK}'
                     )
             ),
@@ -44,8 +48,8 @@ class TestHtmlBuilder:
             (
                     MarkdownParser().parse(['### [Python](https://docs.python.org/3/)とは']),
                     (
-                            f'<h3>{LINE_BREAK}'
-                            f'{INDENT}<a href="https://docs.python.org/3/">Python</a>とは{LINE_BREAK}'
+                            f'<h3 class="{setting["class_name"]["h3"]}">{LINE_BREAK}'
+                            f'{INDENT}<a href="https://docs.python.org/3/" class="{setting["class_name"]["a"]}">Python</a>とは{LINE_BREAK}'
                             f'</h3>{LINE_BREAK}'
                     )
             ),
@@ -66,16 +70,16 @@ class TestHtmlBuilder:
             (
                     ['> 私は昨日こう言いました', '> 帰りたいなぁ', '> 引用終わり'],
                     (
-                            f'<blockquote>{LINE_BREAK}'
-                            f'{INDENT}<p>{LINE_BREAK}'
+                            f'<blockquote class="{setting["class_name"]["blockquote"]}">{LINE_BREAK}'
+                            f'{INDENT}<p class="{setting["class_name"]["p"]}">{LINE_BREAK}'
                             f'{INDENT}{INDENT}私は昨日こう言いました{LINE_BREAK}'
                             f'{INDENT}</p>{LINE_BREAK}'
 
-                            f'{INDENT}<p>{LINE_BREAK}'
+                            f'{INDENT}<p class="{setting["class_name"]["p"]}">{LINE_BREAK}'
                             f'{INDENT}{INDENT}帰りたいなぁ{LINE_BREAK}'
                             f'{INDENT}</p>{LINE_BREAK}'
 
-                            f'{INDENT}<p>{LINE_BREAK}'
+                            f'{INDENT}<p class="{setting["class_name"]["p"]}">{LINE_BREAK}'
                             f'{INDENT}{INDENT}引用終わり{LINE_BREAK}'
                             f'{INDENT}</p>{LINE_BREAK}'
 
@@ -99,14 +103,14 @@ class TestHtmlBuilder:
             (
                     ['* task 1', '* task 2', '* task 3'],
                     (
-                            f'<ul>{LINE_BREAK}'
-                            f'{INDENT}<li>{LINE_BREAK}'
+                            f'<ul class="{setting["class_name"]["ul"]}">{LINE_BREAK}'
+                            f'{INDENT}<li class="{setting["class_name"]["li"]}">{LINE_BREAK}'
                             f'{INDENT}{INDENT}task 1{LINE_BREAK}'
                             f'{INDENT}</li>{LINE_BREAK}'
-                            f'{INDENT}<li>{LINE_BREAK}'
+                            f'{INDENT}<li class="{setting["class_name"]["li"]}">{LINE_BREAK}'
                             f'{INDENT}{INDENT}task 2{LINE_BREAK}'
                             f'{INDENT}</li>{LINE_BREAK}'
-                            f'{INDENT}<li>{LINE_BREAK}'
+                            f'{INDENT}<li class="{setting["class_name"]["li"]}">{LINE_BREAK}'
                             f'{INDENT}{INDENT}task 3{LINE_BREAK}'
                             f'{INDENT}</li>{LINE_BREAK}'
                             f'</ul>{LINE_BREAK}'
