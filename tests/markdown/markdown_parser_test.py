@@ -36,8 +36,7 @@ class TestMarkdownParser:
             ),
             (
                     ['---'],
-                    ('[Paragraph: indent_depth=0 | '
-                     'Child of Paragraph -> HorizontalRule: ]')
+                    '[HorizontalRule: | Child of HorizontalRule -> Plain: text=]'
             ),
         ],
         ids=['plain', 'heading', 'quote', 'code', 'image', 'horizontal rule'])

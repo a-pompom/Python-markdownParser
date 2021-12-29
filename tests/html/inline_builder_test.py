@@ -1,7 +1,7 @@
 import pytest
 
-from app.html.inline_builder import InlineBuilder, LinkBuilder, CodeBuilder, ImageBuilder, HorizontalRuleBuilder
-from app.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser, HorizontalRuleParser
+from app.html.inline_builder import InlineBuilder, LinkBuilder, CodeBuilder, ImageBuilder
+from app.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser
 from app.settings import setting
 
 
@@ -166,44 +166,6 @@ class TestImageBuilder:
         # GIVEN
         sut = ImageBuilder()
         inline = ImageParser().parse(inline_text)
-        # WHEN
-        actual = sut.build(inline)
-        # THEN
-        assert actual == expected
-
-
-class TestHorizontalRuleBuilder:
-    """ HorizontalRuleInline要素からhrタグと対応するHTML文字列が得られるか検証 """
-
-    # 対象判定
-    @pytest.mark.parametrize(
-        ('inline_text', 'expected'), [
-            ('---', True),
-            ('--', False),
-        ],
-        ids=['target', 'not target'])
-    def test_target(self, inline_text: str, expected: bool):
-        # GIVEN
-        sut = HorizontalRuleBuilder()
-        inline = InlineParser().parse(inline_text)[0]
-        # WHEN
-        actual = sut.is_target(inline)
-        # THEN
-        assert actual == expected
-
-    # HTML組み立て
-    @pytest.mark.parametrize(
-        ('inline_text', 'expected'), [
-            (
-                    '---',
-                    f'<hr class="{setting["class_name"]["hr"]}">'
-            ),
-        ]
-    )
-    def test_build(self, inline_text: str, expected: str):
-        # GIVEN
-        sut = HorizontalRuleBuilder()
-        inline = HorizontalRuleParser().parse(inline_text)
         # WHEN
         actual = sut.build(inline)
         # THEN
