@@ -2,6 +2,7 @@ import pytest
 
 from app.html.inline_builder import InlineBuilder, LinkBuilder, CodeBuilder, ImageBuilder, HorizontalRuleBuilder
 from app.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser, HorizontalRuleParser
+from app.settings import setting
 
 
 class TestInlineBuilder:
@@ -11,10 +12,22 @@ class TestInlineBuilder:
     @pytest.mark.parametrize(
         ('inline_text', 'expected'),
         [
-            ('plain text', 'plain text'),
-            ('[参考リンク](https://docs.python.org/3/)', '<a href="https://docs.python.org/3/">参考リンク</a>'),
-            ('![awesome image](image.png)', '<img src="image.png" alt="awesome image">'),
-            ('`DependencyInjection`', '<code>DependencyInjection</code>'),
+            (
+                    'plain text',
+                    'plain text'
+            ),
+            (
+                    '[参考リンク](https://docs.python.org/3/)',
+                    f'<a href="https://docs.python.org/3/" class="{setting["class_name"]["a"]}">参考リンク</a>'
+            ),
+            (
+                    '![awesome image](image.png)',
+                    '<img src="image.png" alt="awesome image">'
+            ),
+            (
+                    '`DependencyInjection`',
+                    f'<code class="{setting["class_name"]["code"]}">DependencyInjection</code>'
+            ),
         ],
         ids=['plain', 'link', 'image', 'code'])
     def test_build(self, inline_text: str, expected: str):
@@ -52,8 +65,14 @@ class TestLinkBuilder:
     @pytest.mark.parametrize(
         ('inline_text', 'expected'),
         [
-            ('[this is a link](url)', '<a href="url">this is a link</a>'),
-            ('[参考リンク](https://www.google.com/)', '<a href="https://www.google.com/">参考リンク</a>')
+            (
+                    '[this is a link](url)',
+                    f'<a href="url" class="{setting["class_name"]["a"]}">this is a link</a>'
+            ),
+            (
+                    '[参考リンク](https://www.google.com/)',
+                    f'<a href="https://www.google.com/" class="{setting["class_name"]["a"]}">参考リンク</a>'
+            )
         ],
         ids=['url', 'google'])
     def test_build(self, inline_text: str, expected: str):
@@ -89,8 +108,14 @@ class TestCodeBuilder:
     # HTML組み立て
     @pytest.mark.parametrize(
         ('inline_text', 'expected'), [
-            ('`plain text`', '<code>plain text</code>'),
-            ('`codeタグ`', '<code>codeタグ</code>'),
+            (
+                    '`plain text`',
+                    f'<code class="{setting["class_name"]["code"]}">plain text</code>'
+            ),
+            (
+                    '`codeタグ`',
+                    f'<code class="{setting["class_name"]["code"]}">codeタグ</code>'
+            ),
         ],
         ids=['plain', 'full width'])
     def test_build(self, inline_text: str, expected: str):
@@ -127,8 +152,14 @@ class TestImageBuilder:
     @pytest.mark.parametrize(
         ('inline_text', 'expected'),
         [
-            ('![わんこ](images/dog.png)', '<img src="images/dog.png" alt="わんこ">'),
-            ('![画像](http://localhost/image.png)', '<img src="http://localhost/image.png" alt="画像">'),
+            (
+                    '![わんこ](images/dog.png)',
+                    '<img src="images/dog.png" alt="わんこ">'
+            ),
+            (
+                    '![画像](http://localhost/image.png)',
+                    '<img src="http://localhost/image.png" alt="画像">'
+            ),
         ],
         ids=['path_expression', 'url_expression'])
     def test_build(self, inline_text, expected: str):
@@ -163,7 +194,10 @@ class TestHorizontalRuleBuilder:
     # HTML組み立て
     @pytest.mark.parametrize(
         ('inline_text', 'expected'), [
-            ('---', '<hr>'),
+            (
+                    '---',
+                    f'<hr class="{setting["class_name"]["hr"]}">'
+            ),
         ]
     )
     def test_build(self, inline_text: str, expected: str):
