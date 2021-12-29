@@ -71,13 +71,14 @@ class ParagraphBuilder(IBuilder):
     """ pタグ(段落)の組み立てを責務に持つ """
 
     INDENT_EXPRESSION = '{indent}'
+    CLASSNAME_EXPRESSION = '{classname}'
     TEXT_EXPRESSION = '{text}'
     # example
-    # <p>
+    # <p class="...">
     #     これから説明します。
     # </p>
     TEMPLATE = (
-        f'{INDENT_EXPRESSION}<p>{LINE_BREAK}'
+        f'{INDENT_EXPRESSION}<p class="{CLASSNAME_EXPRESSION}">{LINE_BREAK}'
         f'{INDENT_EXPRESSION}{INDENT}{TEXT_EXPRESSION}{LINE_BREAK}'
         f'{INDENT_EXPRESSION}</p>'
     )
@@ -97,6 +98,8 @@ class ParagraphBuilder(IBuilder):
         paragraph = self.TEMPLATE.replace(
             self.INDENT_EXPRESSION, get_indent_text_from_depth(block.indent_depth)
         ).replace(
+            self.CLASSNAME_EXPRESSION, setting['class_name']['p']
+        ).replace(
             self.TEXT_EXPRESSION, child_text
         )
         return paragraph
@@ -106,13 +109,14 @@ class HeadingBuilder(IBuilder):
     """ hタグ(ヘッダ)の組み立てを責務に持つ """
 
     HEADING_EXPRESSION = '{h}'
+    CLASSNAME_EXPRESSION = '{classname}'
     TEXT_EXPRESSION = '{text}'
     # example
-    # <h2>
+    # <h2 class="...">
     #     概要
     # </h2>
     TEMPLATE = (
-        f'<{HEADING_EXPRESSION}>{LINE_BREAK}'
+        f'<{HEADING_EXPRESSION} class="{CLASSNAME_EXPRESSION}">{LINE_BREAK}'
         f'{INDENT}{TEXT_EXPRESSION}{LINE_BREAK}'
         f'</{HEADING_EXPRESSION}>'
     )
@@ -133,6 +137,8 @@ class HeadingBuilder(IBuilder):
         heading = self.TEMPLATE.replace(
             self.HEADING_EXPRESSION, heading_tag
         ).replace(
+            self.CLASSNAME_EXPRESSION, setting['class_name'].get(heading_tag, '')
+        ).replace(
             self.TEXT_EXPRESSION, child_text
         )
 
@@ -144,12 +150,13 @@ class QuoteBuilder(IBuilder):
 
     # 子が複数行存在するため、改行やインデントは、コンバータや、他のビルダが責務を持つ
     TEXT_EXPRESSION = '{text}'
+    CLASSNAME_EXPRESSION = '{classname}'
     # example
-    # <blockquote>
+    # <blockquote class="...">
     #     引用
     # </blockquote>
     TEMPLATE = (
-        f'<blockquote>{LINE_BREAK}'
+        f'<blockquote class="{CLASSNAME_EXPRESSION}">{LINE_BREAK}'
         f'{TEXT_EXPRESSION}'
         f'</blockquote>'
     )
@@ -167,6 +174,8 @@ class QuoteBuilder(IBuilder):
         """
 
         blockquote = self.TEMPLATE.replace(
+            self.CLASSNAME_EXPRESSION, setting['class_name']['blockquote']
+        ).replace(
             self.TEXT_EXPRESSION, child_text
         )
 
@@ -177,15 +186,16 @@ class ListBuilder(IBuilder):
     """ ul(リスト)タグの組み立てを責務に持つ """
 
     TEXT_EXPRESSION = '{text}'
+    CLASSNAME_EXPRESSION = '{classname}'
     # 子の改行/インデントはListItemBuilderが責務を持つ
     # example
-    # <ul>
-    #     <li>
+    # <ul class="...">
+    #     <li class="...">
     #         list item
     #     </li>
     # </ul>
     TEMPLATE = (
-        f'<ul>{LINE_BREAK}'
+        f'<ul class="{CLASSNAME_EXPRESSION}">{LINE_BREAK}'
         f'{TEXT_EXPRESSION}'
         f'</ul>'
     )
@@ -204,6 +214,8 @@ class ListBuilder(IBuilder):
         """
 
         unordered_list = self.TEMPLATE.replace(
+            self.CLASSNAME_EXPRESSION, setting['class_name']['ul']
+        ).replace(
             self.TEXT_EXPRESSION, child_text
         )
 
@@ -214,13 +226,14 @@ class ListItemBuilder(IBuilder):
     """ li(リスト子要素)タグの組み立てを責務に持つ """
 
     INDENT_EXPRESSION = '{indent}'
+    CLASSNAME_EXPRESSION = '{classname}'
     TEXT_EXPRESSION = '{text}'
     # example
-    # <li>
+    # <li class="...">
     #     item1
     # </li>
     TEMPLATE = (
-        f'{INDENT_EXPRESSION}<li>{LINE_BREAK}'
+        f'{INDENT_EXPRESSION}<li class="{CLASSNAME_EXPRESSION}">{LINE_BREAK}'
         f'{INDENT_EXPRESSION}{INDENT}{TEXT_EXPRESSION}{LINE_BREAK}'
         f'{INDENT_EXPRESSION}</li>'
     )
@@ -239,6 +252,8 @@ class ListItemBuilder(IBuilder):
 
         list_item = self.TEMPLATE.replace(
             self.INDENT_EXPRESSION, get_indent_text_from_depth(block.indent_depth)
+        ).replace(
+            self.CLASSNAME_EXPRESSION, setting['class_name']['li']
         ).replace(
             self.TEXT_EXPRESSION, child_text
         )

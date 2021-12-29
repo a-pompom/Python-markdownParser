@@ -1,4 +1,5 @@
 from app.element.inline import Inline, LinkInline, CodeInline, ImageInline, HorizontalRuleInline
+from app.settings import setting
 
 
 class InlineBuilder:
@@ -49,9 +50,10 @@ class IBuilder:
 class LinkBuilder(IBuilder):
     """ aタグで表されるリンク要素を生成することを責務に持つ """
 
+    CLASSNAME_EXPRESSION = '{classname}'
     HREF_EXPRESSION = '{href}'
     TEXT_EXPRESSION = '{text}'
-    TEMPLATE = f'<a href="{HREF_EXPRESSION}">{TEXT_EXPRESSION}</a>'
+    TEMPLATE = f'<a href="{HREF_EXPRESSION}" class="{CLASSNAME_EXPRESSION}">{TEXT_EXPRESSION}</a>'
 
     def is_target(self, inline: Inline) -> bool:
         return isinstance(inline, LinkInline)
@@ -65,9 +67,11 @@ class LinkBuilder(IBuilder):
         """
 
         href = inline.href
-        # <a href="url">text</a>
+        # <a href="url" class="...">text</a>
         anchor_tag = self.TEMPLATE.replace(
             self.HREF_EXPRESSION, href,
+        ).replace(
+            self.CLASSNAME_EXPRESSION, setting['class_name']['a']
         ).replace(
             self.TEXT_EXPRESSION, inline.text
         )
@@ -78,8 +82,9 @@ class LinkBuilder(IBuilder):
 class CodeBuilder(IBuilder):
     """ codeタグで表現されるコード要素を生成することを責務に持つ """
 
+    CLASSNAME_EXPRESSION = '{classname}'
     TEXT_EXPRESSION = '{text}'
-    TEMPLATE = f'<code>{TEXT_EXPRESSION}</code>'
+    TEMPLATE = f'<code class="{CLASSNAME_EXPRESSION}">{TEXT_EXPRESSION}</code>'
 
     def is_target(self, inline: Inline) -> bool:
         return isinstance(inline, CodeInline)
@@ -93,6 +98,8 @@ class CodeBuilder(IBuilder):
         """
 
         code_tag = self.TEMPLATE.replace(
+            self.CLASSNAME_EXPRESSION, setting['class_name']['code']
+        ).replace(
             self.TEXT_EXPRESSION, inline.text
         )
 
@@ -125,12 +132,13 @@ class ImageBuilder(IBuilder):
         )
 
         return img_tag
-    
-    
+
+
 class HorizontalRuleBuilder(IBuilder):
     """ hrタグで表現される水平罫線要素を生成することを責務に持つ """
 
-    TEMPLATE = f'<hr>'
+    CLASSNAME_EXPRESSION = '{classname}'
+    TEMPLATE = f'<hr class="{CLASSNAME_EXPRESSION}">'
 
     def is_target(self, inline: Inline) -> bool:
         return isinstance(inline, HorizontalRuleInline)
@@ -143,4 +151,4 @@ class HorizontalRuleBuilder(IBuilder):
         :return: hrタグ文字列
         """
 
-        return self.TEMPLATE
+        return self.TEMPLATE.replace(self.CLASSNAME_EXPRESSION, setting['class_name']['hr'])
