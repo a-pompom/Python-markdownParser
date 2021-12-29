@@ -105,3 +105,12 @@ class CodeBlock(Block):
     def __repr__(self):
         child_repr_text = create_repr_children('CodeBlock', self.children)
         return f'[CodeBlock:{child_repr_text}]'
+
+
+@dataclasses.dataclass
+class HorizontalRuleBlock(Block):
+    """ hrタグと対応する水平罫線要素を保持 """
+
+    def __repr__(self):
+        child_repr_text = create_repr_children('HorizontalRule', self.children)
+        return f'[HorizontalRule:{child_repr_text}]'

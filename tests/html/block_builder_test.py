@@ -1,8 +1,8 @@
 import pytest
 
 from app.html.block_builder import BlockBuilder, HeadingBuilder, QuoteBuilder, ListBuilder, ListItemBuilder, \
-    CodeBlockBuilder
-from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser
+    CodeBlockBuilder, HorizontalRuleBuilder
+from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, HorizontalRuleParser
 from app.markdown.inline_parser import InlineParser
 
 from app.settings import setting
@@ -329,5 +329,43 @@ class TestCodeBlockBuilder:
         block = CodeBlockFactory().create_single_code_block(text)
         # WHEN
         actual = sut.build(block, text)
+        # THEN
+        assert actual == expected
+
+
+class TestHorizontalRuleBuilder:
+    """ HorizontalRuleBlock要素からhrタグと対応するHTML文字列が得られるか検証 """
+
+    # 対象判定
+    @pytest.mark.parametrize(
+        ('text', 'expected'), [
+            ('---', True),
+            ('--', False),
+        ],
+        ids=['target', 'not target'])
+    def test_target(self, text: str, expected: bool):
+        # GIVEN
+        sut = HorizontalRuleBuilder()
+        block = BlockParser().parse(text, InlineParser().parse(text))
+        # WHEN
+        actual = sut.is_target(block)
+        # THEN
+        assert actual == expected
+
+    # HTML組み立て
+    @pytest.mark.parametrize(
+        ('text', 'expected'), [
+            (
+                    '---',
+                    f'<hr class="{setting["class_name"]["hr"]}">'
+            ),
+        ]
+    )
+    def test_build(self, text: str, expected: str):
+        # GIVEN
+        sut = HorizontalRuleBuilder()
+        block = HorizontalRuleParser().parse(text, InlineParser().parse(''))
+        # WHEN
+        actual = sut.build(block, '')
         # THEN
         assert actual == expected

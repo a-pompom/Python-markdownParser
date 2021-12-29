@@ -1,5 +1,5 @@
 from app.element.block import Block, PlainBlock, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, ListItemBlock, \
-    CodeBlock
+    CodeBlock, HorizontalRuleBlock
 
 from app.settings import setting
 
@@ -23,7 +23,7 @@ class BlockBuilder:
 
     def __init__(self):
         self._builders: list[IBuilder] = [ParagraphBuilder(), HeadingBuilder(), QuoteBuilder(), ListItemBuilder(),
-                                          ListBuilder(), CodeBlockBuilder()]
+                                          ListBuilder(), CodeBlockBuilder(), HorizontalRuleBuilder()]
 
     def build(self, block: Block, child_text: str) -> str:
         """
@@ -297,3 +297,24 @@ class CodeBlockBuilder(IBuilder):
         )
 
         return code_block
+
+
+class HorizontalRuleBuilder(IBuilder):
+    """ hrタグで表現される水平罫線要素を生成することを責務に持つ """
+
+    CLASSNAME_EXPRESSION = '{classname}'
+    TEMPLATE = f'<hr class="{CLASSNAME_EXPRESSION}">'
+
+    def is_target(self, block: Block) -> bool:
+        return isinstance(block, HorizontalRuleBlock)
+
+    def build(self, block: HorizontalRuleBlock, child_text: str) -> str:
+        """
+        hrタグ文字列を組み立て
+
+        :param block: 組み立て元Block要素
+        :param child_text: 子要素文字列
+        :return: hrタグ文字列
+        """
+
+        return self.TEMPLATE.replace(self.CLASSNAME_EXPRESSION, setting['class_name']['hr'])

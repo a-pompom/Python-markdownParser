@@ -1,7 +1,8 @@
 import pytest
 
 from app.markdown.inline_parser import InlineParser
-from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, CodeBlockParser
+from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, CodeBlockParser, \
+    HorizontalRuleParser
 
 
 class TestBlockParser:
@@ -284,6 +285,59 @@ class TestCodeBlock:
     def test_parse(self, text: str, child_text: str, expected: str):
         # GIVEN
         sut = CodeBlockParser()
+        children = InlineParser().parse(child_text)
+        # WHEN
+        actual = sut.parse(text, children)
+        # THEN
+        assert repr(actual) == expected
+
+
+class TestHorizontalRule:
+    """ ---で表現される水平線罫線要素を検証 """
+
+    # 記法が対象か
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            ('---', True),
+            ('罫線のつもりです', False),
+        ],
+        ids=['hr', 'not hr'])
+    def test_target(self, text: str, expected: bool):
+        # GIVEN
+        sut = HorizontalRuleParser()
+        # WHEN
+        actual = sut.is_target(text)
+        # THEN
+        assert actual == expected
+
+    # 記法に基づいて分離
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            (
+                    '---',
+                    ('')
+            ),
+        ])
+    def test_extract(self, text: str, expected: str):
+        # GIVEN
+        sut = HorizontalRuleParser()
+        # WHEN
+        actual = sut.extract_text(text)
+        # THEN
+        assert actual == expected
+
+    # 記法を解釈
+    @pytest.mark.parametrize(
+        ('text', 'child_text', 'expected'),
+        [
+            ('---', '', '[HorizontalRule: | Child of HorizontalRule -> Plain: text=]')
+        ]
+    )
+    def test_parse(self, text: str, child_text: str, expected: str):
+        # GIVEN
+        sut = HorizontalRuleParser()
         children = InlineParser().parse(child_text)
         # WHEN
         actual = sut.parse(text, children)
