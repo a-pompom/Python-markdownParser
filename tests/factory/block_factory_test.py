@@ -1,6 +1,6 @@
 import pytest
 
-from tests.factory.block_factory import ListItemFactory, CodeBlockFactory
+from tests.factory.block_factory import ListItemFactory, CodeChildBlockFactory
 
 
 class TestListItemFactory:
@@ -43,20 +43,20 @@ class TestListItemFactory:
             assert repr(actual) == expected
 
 
-class TestCodeBlockFactory:
-    """ コードブロック要素を生成できるか """
+class TestCodeChildBlockFactory:
+    """ コードブロック子要素を生成できるか """
 
     # 単一
     @pytest.mark.parametrize(
         ('text', 'expected'),
         [
-            ('', '[CodeBlock: | Child of CodeBlock -> Plain: text=]'),
-            ('# plain heading', '[CodeBlock: | Child of CodeBlock -> Plain: text=# plain heading]'),
+            ('', '[CodeChildBlock: | Child of CodeChildBlock -> Plain: text=]'),
+            ('# plain heading', '[CodeChildBlock: | Child of CodeChildBlock -> Plain: text=# plain heading]'),
         ]
     )
     def test_single(self, text: str, expected: str):
         # GIVEN
-        sut = CodeBlockFactory()
+        sut = CodeChildBlockFactory()
         # WHEN
         actual = sut.create_single_code_block(text)
         # THEN
@@ -68,15 +68,15 @@ class TestCodeBlockFactory:
         [
             (
                     ['', '## Heading', '[link](url)'],
-                    ['[CodeBlock: | Child of CodeBlock -> Plain: text=]',
-                     '[CodeBlock: | Child of CodeBlock -> Plain: text=## Heading]',
-                     '[CodeBlock: | Child of CodeBlock -> Plain: text=[link](url)]']
+                    ['[CodeChildBlock: | Child of CodeChildBlock -> Plain: text=]',
+                     '[CodeChildBlock: | Child of CodeChildBlock -> Plain: text=## Heading]',
+                     '[CodeChildBlock: | Child of CodeChildBlock -> Plain: text=[link](url)]']
             )
         ]
     )
     def test_multiple(self, lines: list[str], expected_list: list[str]):
         # GIVEN
-        sut = CodeBlockFactory()
+        sut = CodeChildBlockFactory()
         # WHEN
         actual_list = sut.create_multiple_code_block(lines)
         # THEn

@@ -265,6 +265,7 @@ class CodeBlockBuilder(IBuilder):
     """ pre, code(コードブロック) 要素の組み立てを責務に持つ """
 
     TEXT_EXPRESSION = '{text}'
+    LANGUAGE_EXPRESSION = '{language}'
     # 子要素は複数行に及ぶため、改行/インデントはPlainBlock側が責務を持つ
     # example
     # <pre>
@@ -274,7 +275,7 @@ class CodeBlockBuilder(IBuilder):
     # </pre>
     TEMPLATE = (
         f'<pre>{LINE_BREAK}'
-        f'{INDENT}<code>{LINE_BREAK}'
+        f'{INDENT}<code class="{LANGUAGE_EXPRESSION}">{LINE_BREAK}'
         f'{TEXT_EXPRESSION}'
         f'{INDENT}</code>{LINE_BREAK}'
         f'</pre>'
@@ -292,7 +293,14 @@ class CodeBlockBuilder(IBuilder):
         :return: HTMLのpre, codeタグを含む文字列
         """
 
+        # highlight.jsでハイライトするとき、言語名は小文字を指定
+        language_class_name = setting['class_name_with_template']['code_block'].replace(
+            self.LANGUAGE_EXPRESSION, block.language.lower()
+        )
+
         code_block = self.TEMPLATE.replace(
+            self.LANGUAGE_EXPRESSION, language_class_name
+        ).replace(
             self.TEXT_EXPRESSION, child_text
         )
 

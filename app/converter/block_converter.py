@@ -1,5 +1,6 @@
 from typing import TypeGuard
-from app.element.block import Block, PlainBlock, ParagraphBlock, QuoteBlock, ListBlock, ListItemBlock, CodeBlock
+from app.element.block import Block, PlainBlock, ParagraphBlock, QuoteBlock, ListBlock, ListItemBlock, ICodeBlock, \
+    CodeBlock
 
 
 class BlockConverter:
@@ -83,12 +84,37 @@ class CodeBlockConverter(IConverter):
     INDENT_DEPTH = 2
 
     def is_target(self, blocks: list[Block]) -> TypeGuard[list[Block]]:
-        return all([isinstance(block, CodeBlock) for block in blocks])
+        return all([isinstance(block, ICodeBlock) for block in blocks])
 
-    def convert(self, blocks: list[CodeBlock]) -> CodeBlock:
+    def convert(self, blocks: list[ICodeBlock]) -> CodeBlock:
+        """
+        コードブロック・配下の要素をもとにHTMLのpre, codeタグの構造と対応したCodeBlock要素を生成
+
+        :param blocks: ヘッダ(言語情報を含む)・コードを含むBlock群
+        :return: 1つのBlockで統合したCodeBlock要素
+        """
+
+        language = self._get_code_language_from_header(blocks[0])
         # コードブロックはpre, codeタグの中でひとまとめに記述するため、統合
-        # 先頭要素はHTMLへ出力する必要がないので、除外
-        # TODO 将来的には、```<language>の部分からhighlight jsのクラス属性を組み立てられるようにしたい
         children = [PlainBlock(indent_depth=self.INDENT_DEPTH, children=block.children)
                     for block in blocks[1:]]
-        return CodeBlock(children=children)
+
+        return CodeBlock(language=language, children=children)
+
+    def _get_code_language_from_header(self, root_block: ICodeBlock) -> str:
+        """
+        先頭の要素からコードブロックのハイライト言語を取得
+
+        :param root_block: 先頭のICodeBlock要素 「```<language>」で記述される
+        :return: 「Python」のような、ハイライト言語文字列
+        """
+
+        # ダウンキャストの代用として型ガードを利用
+        if not isinstance(root_block, CodeBlock):
+            return ''
+
+        # コードブロック要素は、
+        # ```HTML
+        # <div>code</div>
+        # のように表現されるので、先頭は言語属性を持つ
+        return root_block.language

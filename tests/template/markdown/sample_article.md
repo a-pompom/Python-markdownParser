@@ -27,9 +27,9 @@
 
 ---
 
-```
+```Python
 # コメントしておきます。
-echo 'Hello Article!!';
+print('Hello Article!!')
 ```
 
 ## まとめ

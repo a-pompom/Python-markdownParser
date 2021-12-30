@@ -172,7 +172,7 @@ class ListParser(IParser):
 
 class CodeBlockParser(IParser):
     """ コードブロック要素の解釈を責務に持つ """
-    PATTERN = r'(```)'
+    PATTERN = r'(```)(.*)'
 
     def is_target(self, markdown_text: str) -> bool:
         return contain_block_notation(self.PATTERN, markdown_text)
@@ -189,7 +189,9 @@ class CodeBlockParser(IParser):
         :param children: Inlineパーサによって解釈された要素の集まり
         :return: コードブロックを表すBlock要素
         """
-        return CodeBlock(children)
+        language = regex.extract_from_group(self.PATTERN, markdown_text, [2])
+       
+        return CodeBlock(language=language, children=children)
 
 
 class HorizontalRuleParser(IParser):

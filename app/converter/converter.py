@@ -1,6 +1,6 @@
 from typing import Generator, Literal
 
-from app.element.block import Block, ParseResult, CodeBlock
+from app.element.block import Block, ParseResult, CodeBlock, CodeChildBlock
 from app.converter.block_converter import BlockConverter
 
 
@@ -55,7 +55,7 @@ def group_same_range_blocks(blocks: list[Block]) -> list[Block]:
             continue
         # 中間
         if mode == 'CodeBlock' and not isinstance(block, CodeBlock):
-            grouped_blocks.append(CodeBlock(children=block.children))
+            grouped_blocks.append(CodeChildBlock(children=block.children))
             continue
         # 終点
         if mode == 'CodeBlock' and isinstance(block, CodeBlock):
@@ -81,7 +81,7 @@ def split_to_convert_target(blocks: list[Block]) -> Generator[list[Block], None,
 
     for block in blocks:
         # 同種のブロックは同じコンバータで処理できるので、ひとまとめにする
-        if isinstance(blocks[start], type(block)):
+        if block.is_same_type(blocks[start]):
             end += 1
             continue
 

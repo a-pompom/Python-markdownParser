@@ -2,12 +2,13 @@ import pytest
 
 from app.html.block_builder import BlockBuilder, HeadingBuilder, QuoteBuilder, ListBuilder, ListItemBuilder, \
     CodeBlockBuilder, HorizontalRuleBuilder
-from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, HorizontalRuleParser
+from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, HorizontalRuleParser, \
+    CodeBlockParser
 from app.markdown.inline_parser import InlineParser
 
 from app.settings import setting
 
-from tests.factory.block_factory import ListItemFactory, CodeBlockFactory
+from tests.factory.block_factory import ListItemFactory, CodeChildBlockFactory
 
 # よく使う設定値
 LINE_BREAK = setting['newline_code']
@@ -263,14 +264,14 @@ class TestCodeBlockBuilder:
     @pytest.mark.parametrize(
         'text',
         [
-            '# code comment',
-            '() => {}',
+            '```Java',
+            '```',
         ]
     )
     def test_is_target_target(self, text: str):
         # GIVEN
         sut = CodeBlockBuilder()
-        block = CodeBlockFactory().create_single_code_block(text)
+        block = CodeBlockParser().parse(text, InlineParser().parse(''))
         # WHEN
         actual = sut.is_target(block)
         # THEN
@@ -297,23 +298,25 @@ class TestCodeBlockBuilder:
     # 要素自体の改行/インデントはconverterが責務を持つ
     # これは、子要素は複数行に及び、子要素1行分に対してのみ改行やインデントを適用するとかえって扱いづらくなるためである
     @pytest.mark.parametrize(
-        ('text', 'expected'),
+        ('header', 'text', 'expected'),
         [
             (
+                    '```Java',
                     'List<String> list;',
                     (
                             f'<pre>{LINE_BREAK}'
-                            f'{INDENT}<code>{LINE_BREAK}'
+                            f'{INDENT}<code class="language-java hljs">{LINE_BREAK}'
                             f'List<String> list;'
                             f'{INDENT}</code>{LINE_BREAK}'
                             f'</pre>'
                     )
             ),
             (
+                    '```',
                     '## [参考](url)',
                     (
                             f'<pre>{LINE_BREAK}'
-                            f'{INDENT}<code>{LINE_BREAK}'
+                            f'{INDENT}<code class="language- hljs">{LINE_BREAK}'
                             f'## [参考](url)'
                             f'{INDENT}</code>{LINE_BREAK}'
                             f'</pre>'
@@ -323,10 +326,10 @@ class TestCodeBlockBuilder:
         ],
         ids=['code', 'markdown text']
     )
-    def test_build(self, text: str, expected: str):
+    def test_build(self, header: str, text: str, expected: str):
         # GIVEN
         sut = CodeBlockBuilder()
-        block = CodeBlockFactory().create_single_code_block(text)
+        block = CodeBlockParser().parse(header, InlineParser().parse(text))
         # WHEN
         actual = sut.build(block, text)
         # THEN

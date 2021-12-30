@@ -18,5 +18,8 @@ setting = {
 
         'code': 'bg-slate-700',
         'a': 'text-sky-300',
+    },
+    'class_name_with_template': {
+        'code_block': 'language-{language} hljs'
     }
 }
