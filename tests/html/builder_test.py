@@ -132,15 +132,15 @@ class TestHtmlBuilder:
         [
             (['```', '# コメントしておきます。', 'const i = 0;', '```'],
              (f'<pre>{LINE_BREAK}'
-              f'{INDENT}<code>{LINE_BREAK}'
+              f'{INDENT}<code class="language- hljs">{LINE_BREAK}'
               f'{INDENT}{INDENT}# コメントしておきます。{LINE_BREAK}'
               f'{INDENT}{INDENT}const i = 0;{LINE_BREAK}'
               f'{INDENT}</code>{LINE_BREAK}'
               f'</pre>{LINE_BREAK}')),
 
-            (['```', 'someFunction()', '> コードは終わっているはず。'],
+            (['```JavaScript', 'someFunction()', '> コードは終わっているはず。'],
              (f'<pre>{LINE_BREAK}'
-              f'{INDENT}<code>{LINE_BREAK}'
+              f'{INDENT}<code class="language-javascript hljs">{LINE_BREAK}'
               f'{INDENT}{INDENT}someFunction(){LINE_BREAK}'
               f'{INDENT}{INDENT}> コードは終わっているはず。{LINE_BREAK}'
               f'{INDENT}</code>{LINE_BREAK}'

@@ -12,29 +12,29 @@ class TestGrouping:
         ('lines', 'expected_list'),
         [
             (
-                ['```', 'const i = 0;', '```', 'plain text'],
-                ['[CodeBlock: | Child of CodeBlock -> Plain: text=]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=const i = 0;]',
+                ['```JavaScript', 'const i = 0;', '```', 'plain text'],
+                ['[CodeBlock: language=JavaScript | Child of CodeBlock -> Plain: text=]',
+                 '[CodeChildBlock: | Child of CodeChildBlock -> Plain: text=const i = 0;]',
                  '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=plain text]']
             ),
             (
                 ['# heading', '```', 'sort();', '```'],
                 ['[Heading: size=1 | Child of Heading -> Plain: text=heading]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=sort();]']
+                 '[CodeBlock: language= | Child of CodeBlock -> Plain: text=]',
+                 '[CodeChildBlock: | Child of CodeChildBlock -> Plain: text=sort();]']
             ),
             (
-                ['本文', '```', 'for (int i=0; i < 10; i++)', '```'],
+                ['本文', '```python', 'for (int i=0; i < 10; i++)', '```'],
                 ['[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=本文]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=for (int i=0; i < 10; i++)]']
+                 '[CodeBlock: language=python | Child of CodeBlock -> Plain: text=]',
+                 '[CodeChildBlock: | Child of CodeChildBlock -> Plain: text=for (int i=0; i < 10; i++)]']
 
             ),
             (
                 ['コードの例を示します。', '```', '> 入れ忘れました'],
                 ['[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=コードの例を示します。]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=]',
-                 '[CodeBlock: | Child of CodeBlock -> Plain: text=> 入れ忘れました]']
+                 '[CodeBlock: language= | Child of CodeBlock -> Plain: text=]',
+                 '[CodeChildBlock: | Child of CodeChildBlock -> Plain: text=> 入れ忘れました]']
             ),
         ],
         ids=['head', 'between', 'tail', 'no end']

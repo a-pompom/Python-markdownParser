@@ -49,9 +49,9 @@ class TestBlockParser:
                     '[List: indent_depth=0 | Child of List -> Plain: text=手順その1]'
             ),
             (
-                    '```',
+                    '```JSX',
                     '',
-                    '[CodeBlock: | Child of CodeBlock -> Plain: text=]'
+                    '[CodeBlock: language=JSX | Child of CodeBlock -> Plain: text=]'
             ),
         ],
         ids=['plain', 'heading', 'quote', 'list', 'code_block'])
@@ -254,9 +254,10 @@ class TestCodeBlock:
         ('text', 'expected'),
         [
             ('```', True),
+            ('```python', True),
             ('not code block', False),
         ],
-        ids=['target', 'not target']
+        ids=['target for empty language', 'target', 'not target']
     )
     def test_is_target(self, text: str, expected: bool):
         # GIVEN
@@ -280,7 +281,11 @@ class TestCodeBlock:
 
     @pytest.mark.parametrize(
         ('text', 'child_text', 'expected'),
-        [('```', '', '[CodeBlock: | Child of CodeBlock -> Plain: text=]')]
+        [
+            ('```', '', '[CodeBlock: language= | Child of CodeBlock -> Plain: text=]'),
+            ('```HTML', '', '[CodeBlock: language=HTML | Child of CodeBlock -> Plain: text=]')
+        ],
+        ids=['empty language', 'some language']
     )
     def test_parse(self, text: str, child_text: str, expected: str):
         # GIVEN

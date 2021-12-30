@@ -1,9 +1,12 @@
 import pytest
 
+from app.element.block import ICodeBlock
 from app.converter.block_converter import BlockConverter, QuoteConverter, ListConverter, CodeBlockConverter
+from app.markdown.block_parser import CodeBlockParser
+from app.markdown.inline_parser import InlineParser
 from app.markdown.parser import MarkdownParser
 
-from tests.factory.block_factory import CodeBlockFactory
+from tests.factory.block_factory import CodeChildBlockFactory
 
 
 class TestBlockConverter:
@@ -165,7 +168,7 @@ class TestCodeBlockConverter:
     def test_is_target_code_block(self, lines: list[str], expected: bool):
         # GIVEN
         sut = CodeBlockConverter()
-        blocks = CodeBlockFactory().create_multiple_code_block(lines)
+        blocks = CodeChildBlockFactory().create_multiple_code_block(lines)
         # WHEN
         actual = sut.is_target(blocks)
         # THEN
@@ -192,15 +195,15 @@ class TestCodeBlockConverter:
         ('lines', 'expected'),
         [
             (
-                    ['', '# comment', 'instance = Klass()'],
-                    ('[CodeBlock: | Child of CodeBlock -> '
+                    ['```Python', '# comment', 'instance = Klass()'],
+                    ('[CodeBlock: language=Python | Child of CodeBlock -> '
                      '[Plain: indent_depth=2 | Child of Plain -> Plain: text=# comment]'
                      ' | Child of CodeBlock -> '
                      '[Plain: indent_depth=2 | Child of Plain -> Plain: text=instance = Klass()]]')
             ),
             (
-                    ['', '## [参考](url)', '> 引用ここまで'],
-                    ('[CodeBlock: | Child of CodeBlock -> '
+                    ['```', '## [参考](url)', '> 引用ここまで'],
+                    ('[CodeBlock: language= | Child of CodeBlock -> '
                      '[Plain: indent_depth=2 | Child of Plain -> Plain: text=## [参考](url)]'
                      ' | Child of CodeBlock -> '
                      '[Plain: indent_depth=2 | Child of Plain -> Plain: text=> 引用ここまで]]')
@@ -211,7 +214,11 @@ class TestCodeBlockConverter:
     def test_convert(self, lines: list[str], expected: str):
         # GIVEN
         sut = CodeBlockConverter()
-        blocks = CodeBlockFactory().create_multiple_code_block(lines)
+        # 先頭をCodeBlock, 以降をCodeChildBlockとしておく
+        code_block = CodeBlockParser().parse(lines[0], InlineParser().parse(''))
+        blocks: list[ICodeBlock] = CodeChildBlockFactory().create_multiple_code_block(lines[1:])
+        blocks.insert(0, code_block)
+
         # WHEN
         actual = sut.convert(blocks)
         # THEN

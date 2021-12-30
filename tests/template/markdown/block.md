@@ -12,9 +12,9 @@
 - ハイフンその2
 - ハイフンその3
 
-```
+```Python
 # comment
-const text = 'Hello Block'
+text = 'Hello Block'
 ```
 ---
 ## 終わり

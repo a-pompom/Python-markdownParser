@@ -1,4 +1,4 @@
-from app.element.block import ListItemBlock, CodeBlock
+from app.element.block import ListItemBlock, CodeChildBlock
 from app.element.inline import PlainInline
 from app.markdown.inline_parser import InlineParser
 
@@ -29,25 +29,26 @@ class ListItemFactory:
         return [ListItemBlock(children=InlineParser().parse(line)) for line in lines]
 
 
-class CodeBlockFactory:
-    """ コードブロックを表現するBlock要素を生成 """
+class CodeChildBlockFactory:
+    """ コードブロックの子要素を表現するBlock要素を生成 """
 
-    def create_single_code_block(self, text: str) -> CodeBlock:
+    def create_single_code_block(self, text: str) -> CodeChildBlock:
         """
         単一のコードブロック要素を生成\n
         コードブロックの中では変換が必要ないので、Inline要素はパースしない
 
         :param text: コードブロック要素の文字列
-        :return: CodeBlock要素
+        :return: CodeChildBlock要素
         """
-        return CodeBlock(children=[PlainInline(text=text)])
+        return CodeChildBlock(children=[PlainInline(text=text)])
 
-    def create_multiple_code_block(self, lines: list[str]) -> list[CodeBlock]:
+    def create_multiple_code_block(self, lines: list[str]) -> list[CodeChildBlock]:
         """
         複数のコードブロック要素を生成\n
         コードブロックの中では変換が必要ないので、Inline要素はパースしない
 
         :param lines: 各コードブロック要素の文字列を格納
-        :return: CodeBlock要素のリスト
+        :return: CodeChildBlock要素のリスト
         """
-        return [CodeBlock(children=[PlainInline(text=line)]) for line in lines]
+        return [CodeChildBlock(children=[PlainInline(text=line)])
+                for line in lines]

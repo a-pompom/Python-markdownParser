@@ -61,14 +61,14 @@ class TestConverter:
     @pytest.mark.parametrize(
         ('lines', 'expected'),
         [
-            (['```', '# comment, not heading', 'def func():', '```'],
-             ('[CodeBlock: | Child of CodeBlock -> '
+            (['```Python', '# comment, not heading', 'def func():', '```'],
+             ('[CodeBlock: language=Python | Child of CodeBlock -> '
               '[Plain: indent_depth=2 | Child of Plain -> Plain: text=# comment, not heading]'
               ' | Child of CodeBlock -> '
               '[Plain: indent_depth=2 | Child of Plain -> Plain: text=def func():]]')),
 
             (['```', '[参考](https://)', '> コードは終わっていたはずです'],
-             ('[CodeBlock: | Child of CodeBlock -> '
+             ('[CodeBlock: language= | Child of CodeBlock -> '
               '[Plain: indent_depth=2 | Child of Plain -> Plain: text=[参考](https://)]'
               ' | Child of CodeBlock -> '
               '[Plain: indent_depth=2 | Child of Plain -> Plain: text=> コードは終わっていたはずです]]')),
