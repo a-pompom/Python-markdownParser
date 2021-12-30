@@ -28,6 +28,15 @@ class Block:
     """ 行要素を保持 """
     children: Children
 
+    def is_same_type(self, another: 'Block') -> bool:
+        """
+        2つのBlockが同種のものか判定
+
+        :param another: 比較対象
+        :return: 同種 -> True, 異種 -> False
+        """
+        return isinstance(self, type(another))
+
 
 @dataclasses.dataclass
 class ParseResult:
@@ -99,12 +108,32 @@ class ListItemBlock(Block):
 
 
 @dataclasses.dataclass
-class CodeBlock(Block):
+class ICodeBlock(Block):
+    """ コードブロックを統合するためのインタフェース表現 """
+
+    # コードブロックはICodeBlock型であれば同種とみなす
+    # こうすることで、Converterにて、コード・子要素を同質に扱うことができる
+    def is_same_type(self, another: 'Block') -> bool:
+        return isinstance(another, ICodeBlock)
+
+
+@dataclasses.dataclass
+class CodeBlock(ICodeBlock):
     """ コードブロック要素 """
+    language: str
 
     def __repr__(self):
         child_repr_text = create_repr_children('CodeBlock', self.children)
-        return f'[CodeBlock:{child_repr_text}]'
+        return f'[CodeBlock: language={self.language}{child_repr_text}]'
+
+
+@dataclasses.dataclass
+class CodeChildBlock(ICodeBlock):
+    """ コードブロック内部の要素 """
+
+    def __repr__(self):
+        child_repr_text = create_repr_children('CodeChildBlock', self.children)
+        return f'[CodeChildBlock:{child_repr_text}]'
 
 
 @dataclasses.dataclass
