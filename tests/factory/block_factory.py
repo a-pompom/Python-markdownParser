@@ -27,28 +27,3 @@ class ListItemFactory:
         :return: ListItemBlock要素のリスト
         """
         return [ListItemBlock(children=InlineParser().parse(line)) for line in lines]
-
-
-class CodeChildBlockFactory:
-    """ コードブロックの子要素を表現するBlock要素を生成 """
-
-    def create_single_code_block(self, text: str) -> CodeChildBlock:
-        """
-        単一のコードブロック要素を生成\n
-        コードブロックの中では変換が必要ないので、Inline要素はパースしない
-
-        :param text: コードブロック要素の文字列
-        :return: CodeChildBlock要素
-        """
-        return CodeChildBlock(children=[PlainInline(text=text)])
-
-    def create_multiple_code_block(self, lines: list[str]) -> list[CodeChildBlock]:
-        """
-        複数のコードブロック要素を生成\n
-        コードブロックの中では変換が必要ないので、Inline要素はパースしない
-
-        :param lines: 各コードブロック要素の文字列を格納
-        :return: CodeChildBlock要素のリスト
-        """
-        return [CodeChildBlock(children=[PlainInline(text=line)])
-                for line in lines]

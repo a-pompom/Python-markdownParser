@@ -9,12 +9,12 @@ class TestInlineParser:
     # Inline要素生成
     @pytest.mark.parametrize(('text', 'expected'), [
         (
-                'plain text',
-                ['Plain: text=plain text']
+            'plain text',
+            ['Plain: text=plain text']
         ),
         (
-                'this is [google link](https://www.google.com/)',
-                ['Plain: text=this is ', 'Link: text= google link, href=https://www.google.com/']
+            'this is [google link](https://www.google.com/)',
+            ['Plain: text=this is ', 'Link: text= google link, href=https://www.google.com/']
         )
     ], ids=['plain', 'link'])
     def test_parse(self, text: str, expected: list[str]):
@@ -50,20 +50,20 @@ class TestLink:
         ('link_text', 'expected'),
         [
             (
-                    'normal[link](url)text',
-                    ('normal', '[link](url)', 'text')
+                'normal[link](url)text',
+                ('normal', '[link](url)', 'text')
             ),
             (
-                    '[link](http)',
-                    ('', '[link](http)', '')
+                '[link](http)',
+                ('', '[link](http)', '')
             ),
             (
-                    '# heading [head link](https) text',
-                    ('# heading ', '[head link](https)', ' text')
+                '# heading [head link](https) text',
+                ('# heading ', '[head link](https)', ' text')
             ),
             (
-                    'not ! image [link](url)text',
-                    ('not ! image ', '[link](url)', 'text')
+                'not ! image [link](url)text',
+                ('not ! image ', '[link](url)', 'text')
             ),
         ],
         ids=['normal link', 'only link', 'link with heading', 'not image'])
@@ -113,16 +113,16 @@ class TestCode:
         ('text', 'expected'),
         [
             (
-                    '`//`でコメントを表現します。',
-                    ('', '`//`', 'でコメントを表現します。')
+                '`//`でコメントを表現します。',
+                ('', '`//`', 'でコメントを表現します。')
             ),
             (
-                    'JavaScriptの変数は`const`で宣言します。',
-                    ('JavaScriptの変数は', '`const`', 'で宣言します。')
+                'JavaScriptの変数は`const`で宣言します。',
+                ('JavaScriptの変数は', '`const`', 'で宣言します。')
             ),
             (
-                    'codeで終わります`。`',
-                    ('codeで終わります', '`。`', '')
+                'codeで終わります`。`',
+                ('codeで終わります', '`。`', '')
             ),
         ],
         ids=['no head', 'both', 'no tail'])
@@ -176,20 +176,20 @@ class TestImage:
         ('text', 'expected'),
         [
             (
-                    '![awesome image](/image.png) is here.',
-                    ('', '![awesome image](/image.png)', ' is here.')
+                '![awesome image](/image.png) is here.',
+                ('', '![awesome image](/image.png)', ' is here.')
             ),
             (
-                    'このアイコン![アイコン](/image/icon.png)は良いですね。',
-                    ('このアイコン', '![アイコン](/image/icon.png)', 'は良いですね。')
+                'このアイコン![アイコン](/image/icon.png)は良いですね。',
+                ('このアイコン', '![アイコン](/image/icon.png)', 'は良いですね。')
             ),
             (
-                    '最新の画像![画像](/画像.png)',
-                    ('最新の画像', '![画像](/画像.png)', '')
+                '最新の画像![画像](/画像.png)',
+                ('最新の画像', '![画像](/画像.png)', '')
             ),
             (
-                    '![画像](/画像.png)',
-                    ('', '![画像](/画像.png)', '')
+                '![画像](/画像.png)',
+                ('', '![画像](/画像.png)', '')
             ),
         ],
         ids=['head', 'both', 'tail', 'inline_only'])

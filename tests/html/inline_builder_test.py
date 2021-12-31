@@ -13,20 +13,20 @@ class TestInlineBuilder:
         ('inline_text', 'expected'),
         [
             (
-                    'plain text',
-                    'plain text'
+                'plain text',
+                'plain text'
             ),
             (
-                    '[参考リンク](https://docs.python.org/3/)',
-                    f'<a href="https://docs.python.org/3/" class="{setting["class_name"]["a"]}">参考リンク</a>'
+                '[参考リンク](https://docs.python.org/3/)',
+                f'<a href="https://docs.python.org/3/" class="{setting["class_name"]["a"]}">参考リンク</a>'
             ),
             (
-                    '![awesome image](image.png)',
-                    '<img src="image.png" alt="awesome image">'
+                '![awesome image](image.png)',
+                '<img src="image.png" alt="awesome image">'
             ),
             (
-                    '`DependencyInjection`',
-                    f'<code class="{setting["class_name"]["code"]}">DependencyInjection</code>'
+                '`DependencyInjection`',
+                f'<code class="{setting["class_name"]["code"]}">DependencyInjection</code>'
             ),
         ],
         ids=['plain', 'link', 'image', 'code'])
@@ -66,12 +66,12 @@ class TestLinkBuilder:
         ('inline_text', 'expected'),
         [
             (
-                    '[this is a link](url)',
-                    f'<a href="url" class="{setting["class_name"]["a"]}">this is a link</a>'
+                '[this is a link](url)',
+                f'<a href="url" class="{setting["class_name"]["a"]}">this is a link</a>'
             ),
             (
-                    '[参考リンク](https://www.google.com/)',
-                    f'<a href="https://www.google.com/" class="{setting["class_name"]["a"]}">参考リンク</a>'
+                '[参考リンク](https://www.google.com/)',
+                f'<a href="https://www.google.com/" class="{setting["class_name"]["a"]}">参考リンク</a>'
             )
         ],
         ids=['url', 'google'])
@@ -109,12 +109,12 @@ class TestCodeBuilder:
     @pytest.mark.parametrize(
         ('inline_text', 'expected'), [
             (
-                    '`plain text`',
-                    f'<code class="{setting["class_name"]["code"]}">plain text</code>'
+                '`plain text`',
+                f'<code class="{setting["class_name"]["code"]}">plain text</code>'
             ),
             (
-                    '`codeタグ`',
-                    f'<code class="{setting["class_name"]["code"]}">codeタグ</code>'
+                '`codeタグ`',
+                f'<code class="{setting["class_name"]["code"]}">codeタグ</code>'
             ),
         ],
         ids=['plain', 'full width'])
@@ -153,12 +153,12 @@ class TestImageBuilder:
         ('inline_text', 'expected'),
         [
             (
-                    '![わんこ](images/dog.png)',
-                    '<img src="images/dog.png" alt="わんこ">'
+                '![わんこ](images/dog.png)',
+                '<img src="images/dog.png" alt="わんこ">'
             ),
             (
-                    '![画像](http://localhost/image.png)',
-                    '<img src="http://localhost/image.png" alt="画像">'
+                '![画像](http://localhost/image.png)',
+                '<img src="http://localhost/image.png" alt="画像">'
             ),
         ],
         ids=['path_expression', 'url_expression'])

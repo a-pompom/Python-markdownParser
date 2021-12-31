@@ -1,12 +1,8 @@
 import pytest
 
-from app.element.block import ICodeBlock
+from app.converter.converter import group_same_range_blocks
 from app.converter.block_converter import BlockConverter, QuoteConverter, ListConverter, CodeBlockConverter
-from app.markdown.block_parser import CodeBlockParser
-from app.markdown.inline_parser import InlineParser
 from app.markdown.parser import MarkdownParser
-
-from tests.factory.block_factory import CodeChildBlockFactory
 
 
 class TestBlockConverter:
@@ -14,8 +10,6 @@ class TestBlockConverter:
     Block要素のコンバータ
     本モジュールへの入力は、サブリスト構築関数により、同種のBlock要素のリストが渡される
     よって、テストでは同種のBlock要素のリストのみ検証
-    サブリスト構築関数の出力を、今回の入力とすべきだと考えられるが、それはコンバータ本体が担保すべき観点なので、
-    本モジュールはコンバータ以前の処理でつくられた入力を前提とする
     """
 
     @pytest.mark.parametrize(
@@ -162,13 +156,21 @@ class TestCodeBlockConverter:
     @pytest.mark.parametrize(
         ('lines', 'expected'),
         [
-            (['const i = 0;', '// comment'], True),
+            (
+                [
+                    '```JavaScript',
+                    'const i = 0;',
+                    '// comment',
+                    '```'
+                ],
+                True
+            ),
         ],
     )
     def test_is_target_code_block(self, lines: list[str], expected: bool):
         # GIVEN
         sut = CodeBlockConverter()
-        blocks = CodeChildBlockFactory().create_multiple_code_block(lines)
+        blocks = group_same_range_blocks(MarkdownParser().parse(lines).content)
         # WHEN
         actual = sut.is_target(blocks)
         # THEN
@@ -195,18 +197,18 @@ class TestCodeBlockConverter:
         ('lines', 'expected'),
         [
             (
-                    ['```Python', '# comment', 'instance = Klass()'],
-                    ('[CodeBlock: language=Python | Child of CodeBlock -> '
-                     '[Plain: indent_depth=2 | Child of Plain -> Plain: text=# comment]'
-                     ' | Child of CodeBlock -> '
-                     '[Plain: indent_depth=2 | Child of Plain -> Plain: text=instance = Klass()]]')
+                ['```Python', '# comment', 'instance = Klass()', '```'],
+                ('[CodeBlock: language=Python | Child of CodeBlock -> '
+                 '[Plain: indent_depth=2 | Child of Plain -> Plain: text=# comment]'
+                 ' | Child of CodeBlock -> '
+                 '[Plain: indent_depth=2 | Child of Plain -> Plain: text=instance = Klass()]]')
             ),
             (
-                    ['```', '## [参考](url)', '> 引用ここまで'],
-                    ('[CodeBlock: language= | Child of CodeBlock -> '
-                     '[Plain: indent_depth=2 | Child of Plain -> Plain: text=## [参考](url)]'
-                     ' | Child of CodeBlock -> '
-                     '[Plain: indent_depth=2 | Child of Plain -> Plain: text=> 引用ここまで]]')
+                ['```', '## [参考](url)', '> 引用ここまで'],
+                ('[CodeBlock: language= | Child of CodeBlock -> '
+                 '[Plain: indent_depth=2 | Child of Plain -> Plain: text=## [参考](url)]'
+                 ' | Child of CodeBlock -> '
+                 '[Plain: indent_depth=2 | Child of Plain -> Plain: text=> 引用ここまで]]')
             ),
         ],
         ids=['code', 'not parsed']
@@ -214,12 +216,15 @@ class TestCodeBlockConverter:
     def test_convert(self, lines: list[str], expected: str):
         # GIVEN
         sut = CodeBlockConverter()
-        # 先頭をCodeBlock, 以降をCodeChildBlockとしておく
-        code_block = CodeBlockParser().parse(lines[0], InlineParser().parse(''))
-        blocks: list[ICodeBlock] = CodeChildBlockFactory().create_multiple_code_block(lines[1:])
-        blocks.insert(0, code_block)
+        blocks = group_same_range_blocks(MarkdownParser().parse(lines).content)
+
+        if not sut.is_target(blocks):
+            assert False
 
         # WHEN
+        # 「Python3.10-dev, PyCharm2021.2」の段階ではリストに対する型ガードが
+        # 有効にならないようなので、型チェックを無効化
+        # noinspection PyTypeChecker
         actual = sut.convert(blocks)
         # THEN
         assert repr(actual) == expected
