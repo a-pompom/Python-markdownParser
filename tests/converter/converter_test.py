@@ -7,7 +7,7 @@ from app.markdown.parser import MarkdownParser
 class TestConverter:
     """ 複数行に渡る処理を統合、といったマークダウンとHTMLの橋渡し処理を検証 """
 
-    # 変換無し
+    # 変換の無いものはそのまま出力されるか
     @pytest.mark.parametrize(
         ('lines', 'expected'),
         [

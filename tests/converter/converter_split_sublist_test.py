@@ -21,14 +21,14 @@ class TestSplitToConvertTarget:
         ('lines', 'expected_list'),
         [
             (
-                    ['first plain text', 'second plain text'],
-                    [['[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=first plain text]',
-                      '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=second plain text]']]
+                ['first plain text', 'second plain text'],
+                [['[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=first plain text]',
+                  '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=second plain text]']]
             ),
             (
-                    ['> 私は昨日', '> こう言いました'],
-                    [['[Quote: | Child of Quote -> Plain: text=私は昨日]',
-                      '[Quote: | Child of Quote -> Plain: text=こう言いました]']]
+                ['> 私は昨日', '> こう言いました'],
+                [['[Quote: | Child of Quote -> Plain: text=私は昨日]',
+                  '[Quote: | Child of Quote -> Plain: text=こう言いました]']]
             ),
         ],
         ids=['only plain', 'only block quote']
@@ -50,19 +50,19 @@ class TestSplitToConvertTarget:
         ('lines', 'expected_list'),
         [
             (
-                    ['# マークダウンとは', '> マークダウンとは', '> これです'],
-                    [['[Heading: size=1 | Child of Heading -> Plain: text=マークダウンとは]'],
-                     ['[Quote: | Child of Quote -> Plain: text=マークダウンとは]',
-                      '[Quote: | Child of Quote -> Plain: text=これです]']
-                     ]
+                ['# マークダウンとは', '> マークダウンとは', '> これです'],
+                [['[Heading: size=1 | Child of Heading -> Plain: text=マークダウンとは]'],
+                 ['[Quote: | Child of Quote -> Plain: text=マークダウンとは]',
+                  '[Quote: | Child of Quote -> Plain: text=これです]']
+                 ]
             ),
             (
-                    ['> 昨日私はこう言いました', '一日が過ぎました', '> 今日私はこう言いました', '> 帰りたい'],
-                    [['[Quote: | Child of Quote -> Plain: text=昨日私はこう言いました]'],
-                     ['[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=一日が過ぎました]'],
-                     ['[Quote: | Child of Quote -> Plain: text=今日私はこう言いました]',
-                      '[Quote: | Child of Quote -> Plain: text=帰りたい]']
-                     ]
+                ['> 昨日私はこう言いました', '一日が過ぎました', '> 今日私はこう言いました', '> 帰りたい'],
+                [['[Quote: | Child of Quote -> Plain: text=昨日私はこう言いました]'],
+                 ['[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=一日が過ぎました]'],
+                 ['[Quote: | Child of Quote -> Plain: text=今日私はこう言いました]',
+                  '[Quote: | Child of Quote -> Plain: text=帰りたい]']
+                 ]
             ),
         ],
         ids=['two type', 'two type between']

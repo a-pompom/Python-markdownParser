@@ -14,8 +14,8 @@ class TestBlockParser:
         [
             ('plain text', 'plain text'),
             ('### awesome heading', 'awesome heading'),
-        ],
-        ids=['plain', 'heading'])
+        ]
+    )
     def test_extract_inline_text(self, text: str, expected: str):
         # GIVEN
         sut = BlockParser()
@@ -26,41 +26,36 @@ class TestBlockParser:
 
     # Block要素生成
     @pytest.mark.parametrize(
-        ('text', 'child_text', 'expected'),
+        ('text', 'expected'),
         [
             (
-                    'plain text',
-                    'plain text',
-                    '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=plain text]'
+                'plain text',
+                '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=plain text]'
             ),
             (
-                    '## awesome heading',
-                    'awesome heading',
-                    '[Heading: size=2 | Child of Heading -> Plain: text=awesome heading]'
+                '## awesome heading',
+                '[Heading: size=2 | Child of Heading -> Plain: text=awesome heading]'
             ),
             (
-                    '> this is a pen.',
-                    'this is a pen.',
-                    '[Quote: | Child of Quote -> Plain: text=this is a pen.]'
+                '> this is a pen.',
+                '[Quote: | Child of Quote -> Plain: text=this is a pen.]'
             ),
             (
-                    '* 手順その1',
-                    '手順その1',
-                    '[List: indent_depth=0 | Child of List -> Plain: text=手順その1]'
+                '* 手順その1',
+                '[List: indent_depth=0 | Child of List -> Plain: text=手順その1]'
             ),
             (
-                    '```JSX',
-                    '',
-                    '[CodeBlock: language=JSX | Child of CodeBlock -> Plain: text=]'
+                '```JSX',
+                '[CodeBlock: language=JSX | Child of CodeBlock -> Plain: text=]'
             ),
         ],
         ids=['plain', 'heading', 'quote', 'list', 'code_block'])
-    def test_parse(self, text: str, child_text: str, expected: str):
+    def test_parse(self, text: str, expected: str):
         # GIVEN
         sut = BlockParser()
         inline_parser = InlineParser()
         # WHEN
-        children = inline_parser.parse(child_text)
+        children = inline_parser.parse(sut.extract_inline_text(text))
         actual = sut.parse(text, children)
 
         # THEN
@@ -88,35 +83,48 @@ class TestHeading:
         # THEN
         assert actual == expected
 
+    # 記法を除いたテキストが得られるか
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            ('# 概要', '概要'),
+            ('### Topic3', 'Topic3'),
+        ]
+    )
+    def test_extract_text(self, text: str, expected: str):
+        # GIVEN
+        sut = HeadingParser()
+        # WHEN
+        actual = sut.extract_text(text)
+        # THEN
+        assert actual == expected
+
     # 記法の解釈
     @pytest.mark.parametrize(
-        ('heading_text', 'child_text', 'expected'),
+        ('heading_text', 'expected'),
         [
             (
-                    '# this is heading',
-                    'this is heading',
-                    '[Heading: size=1 | Child of Heading -> Plain: text=this is heading]'
+                '# this is heading',
+                '[Heading: size=1 | Child of Heading -> Plain: text=this is heading]'
             ),
             (
-                    '###  3rd heading',
-                    ' 3rd heading',
-                    '[Heading: size=3 | Child of Heading -> Plain: text= 3rd heading]'
+                '###  3rd heading',
+                '[Heading: size=3 | Child of Heading -> Plain: text= 3rd heading]'
             ),
             (
-                    '## 2nd heading [link](url) text',
-                    '2nd heading [link](url) text',
-                    ('[Heading: size=2 | '
-                     'Child of Heading -> Plain: text=2nd heading  | '
-                     'Child of Heading -> Link: text=link, href=url | '
-                     'Child of Heading -> Plain: text= text]')
+                '## 2nd heading [link](url) text',
+                ('[Heading: size=2 | '
+                 'Child of Heading -> Plain: text=2nd heading  | '
+                 'Child of Heading -> Link: text=link, href=url | '
+                 'Child of Heading -> Plain: text= text]')
             )
         ], ids=['1st heading', '3rd heading', '2nd heading with link'])
-    def test_parse(self, heading_text: str, child_text: str, expected: str):
+    def test_parse(self, heading_text: str, expected: str):
         # GIVEN
         sut = HeadingParser()
         inline_parser = InlineParser()
+        children = inline_parser.parse(sut.extract_text(heading_text))
         # WHEN
-        children = inline_parser.parse(child_text)
         actual = sut.parse(heading_text, children)
 
         # THEN
@@ -145,7 +153,7 @@ class TestQuote:
         # THEN
         assert actual == expected
 
-    # 記法に関連しないテキストの切り出し
+    # 記法を除いたテキストが得られるか
     @pytest.mark.parametrize(
         ('text', 'expected'),
         [
@@ -165,27 +173,25 @@ class TestQuote:
 
     # 記法の解釈
     @pytest.mark.parametrize(
-        ('text', 'child_text', 'expected'),
+        ('text', 'expected'),
         [
             (
-                    '> awesome text',
-                    'awesome text',
-                    '[Quote: | Child of Quote -> Plain: text=awesome text]'
+                '> awesome text',
+                '[Quote: | Child of Quote -> Plain: text=awesome text]'
             ),
             (
-                    '> すごい発言',
-                    'すごい発言',
-                    '[Quote: | Child of Quote -> Plain: text=すごい発言]'
+                '> すごい発言',
+                '[Quote: | Child of Quote -> Plain: text=すごい発言]'
             ),
         ],
         ids=['normal text', 'full width text']
     )
-    def test_parse(self, text: str, child_text: str, expected: str):
+    def test_parse(self, text: str, expected: str):
         # GIVEN
         sut = QuoteParser()
         inline_parser = InlineParser()
         # WHEN
-        actual = sut.parse(text, inline_parser.parse(child_text))
+        actual = sut.parse(text, inline_parser.parse(sut.extract_text(text)))
         # THEN
         assert repr(actual) == expected
 
@@ -229,18 +235,27 @@ class TestList:
         assert actual == expected
 
     @pytest.mark.parametrize(
-        ('text', 'child_text', 'expected'),
+        ('text', 'expected'),
         [
-            ('* first of all', 'first of all', '[List: indent_depth=0 | Child of List -> Plain: text=first of all]'),
-            ('- 1st', '1st', '[List: indent_depth=0 | Child of List -> Plain: text=1st]'),
-            ('- 最初', '最初', '[List: indent_depth=0 | Child of List -> Plain: text=最初]'),
+            (
+                '* first of all',
+                '[List: indent_depth=0 | Child of List -> Plain: text=first of all]'
+            ),
+            (
+                '- 1st',
+                '[List: indent_depth=0 | Child of List -> Plain: text=1st]'
+            ),
+            (
+                '- 最初',
+                '[List: indent_depth=0 | Child of List -> Plain: text=最初]'
+            ),
         ],
         ids=['* list', '- list', 'full width list']
     )
-    def test_parse(self, text: str, child_text: str, expected: str):
+    def test_parse(self, text: str, expected: str):
         # GIVEN
         sut = ListParser()
-        children = InlineParser().parse(child_text)
+        children = InlineParser().parse(sut.extract_text(text))
         # WHEN
         actual = sut.parse(text, children)
         # THEN
@@ -269,7 +284,10 @@ class TestCodeBlock:
 
     @pytest.mark.parametrize(
         ('text', 'expected'),
-        [('```', '')]
+        [
+            ('```', ''),
+            ('```JavaScript', '')
+        ]
     )
     def test_extract_text(self, text: str, expected: str):
         # GIVEN
@@ -280,17 +298,23 @@ class TestCodeBlock:
         assert actual == expected
 
     @pytest.mark.parametrize(
-        ('text', 'child_text', 'expected'),
+        ('text', 'expected'),
         [
-            ('```', '', '[CodeBlock: language= | Child of CodeBlock -> Plain: text=]'),
-            ('```HTML', '', '[CodeBlock: language=HTML | Child of CodeBlock -> Plain: text=]')
+            (
+                '```',
+                '[CodeBlock: language= | Child of CodeBlock -> Plain: text=]'
+            ),
+            (
+                '```HTML',
+                '[CodeBlock: language=HTML | Child of CodeBlock -> Plain: text=]'
+            ),
         ],
         ids=['empty language', 'some language']
     )
-    def test_parse(self, text: str, child_text: str, expected: str):
+    def test_parse(self, text: str, expected: str):
         # GIVEN
         sut = CodeBlockParser()
-        children = InlineParser().parse(child_text)
+        children = InlineParser().parse(sut.extract_text(text))
         # WHEN
         actual = sut.parse(text, children)
         # THEN
@@ -321,8 +345,8 @@ class TestHorizontalRule:
         ('text', 'expected'),
         [
             (
-                    '---',
-                    ('')
+                '---',
+                ''
             ),
         ])
     def test_extract(self, text: str, expected: str):
@@ -335,15 +359,18 @@ class TestHorizontalRule:
 
     # 記法を解釈
     @pytest.mark.parametrize(
-        ('text', 'child_text', 'expected'),
+        ('text', 'expected'),
         [
-            ('---', '', '[HorizontalRule: | Child of HorizontalRule -> Plain: text=]')
+            (
+                '---',
+                '[HorizontalRule: | Child of HorizontalRule -> Plain: text=]'
+            )
         ]
     )
-    def test_parse(self, text: str, child_text: str, expected: str):
+    def test_parse(self, text: str, expected: str):
         # GIVEN
         sut = HorizontalRuleParser()
-        children = InlineParser().parse(child_text)
+        children = InlineParser().parse(sut.extract_text(text))
         # WHEN
         actual = sut.parse(text, children)
         # THEN

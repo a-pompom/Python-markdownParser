@@ -55,9 +55,9 @@ class TestGrouping:
         ('lines', 'expected_list'),
         [
             (
-                    ['plain text', '# heading'],
-                    ['[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=plain text]',
-                     '[Heading: size=1 | Child of Heading -> Plain: text=heading]']
+                ['plain text', '# heading'],
+                ['[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=plain text]',
+                 '[Heading: size=1 | Child of Heading -> Plain: text=heading]']
             )
         ]
     )
