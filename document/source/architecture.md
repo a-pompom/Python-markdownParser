@@ -6,36 +6,19 @@
 
 
 ```{mermaid}
-sequenceDiagram
-    participant App
-    participant Parser
-    participant Converter
-    participant Generator
-    participant HTMLFile
-    App ->> Parser: マークダウンファイルを渡す
-    Parser ->> Converter: マークダウン変換結果を受け取り
-    Converter ->> Generator: HTML入力を渡す
-    Generator ->> HTMLFile: 変換結果HTMLを出力
-```
-
-```{mermaid}
 stateDiagram-v2
     [*] --> App
     App --> MarkdownParser
   
     state MarkdownParser {
         [*] --> Parser
-        Parser --> HeadingParser
-        Parser --> ListParser
     }
     
     MarkdownParser --> Converter
-    Converter --> HTMLGenerator
+    Converter --> HTMLBuilder
     
-    state HTMLGenerator {
-        [*] --> Generator
-        Generator --> HeadingGenerator
-        Generator --> ListGenerator
+    state HTMLBuilder {
+        [*] --> Builder
     }
 ```
 
@@ -56,18 +39,18 @@ HTMLとの対応付けは中継処理へ委譲。
 
 本オブジェクトは、`Block`と`Inline`の2つの要素から構成されている。
 Blockでは、ヘッダやリストなど、行単位のスタイルの種類を保持。
-一方、Inlineでは、クォートや強調など、インラインでのスタイルの種類を保持。
+一方、Inlineでは、リンクや画像など、インラインでのスタイルの種類を保持。
 
 #### データ構造
 
 より具体的な形をイメージするため、BlockとInlineそれぞれのデータ構造を簡単に記述する。
 
 Blockは、マークダウン変換結果オブジェクト上にリスト形式で保持される。
-それぞれがプロパティ上にヘッダやリストなど、スタイルの種類を持つ。
-更に、各要素は`children`をプロパティとして持ち、テキストやInline・ネストしたブロックを格納。
+ヘッダのサイズ・インデント幅といった属性表現は要素のフィールドで表現。
+更に、各要素は`children`をプロパティとして持ち、Inline・ネストしたブロックを格納。これにより、HTMLの階層構造を表現することができる。
 
 Inlineは、Blockのchildrenプロパティ上で保持される。
-インライン上のテキストやスタイルをプロパティとして持ち、`*strong*`のようなインラインスタイルを表現。
+インライン上のテキストやスタイルをプロパティとして持ち、`<a href="url">text</a>`のようなインラインスタイルを表現。
 
 ---
 
@@ -86,23 +69,13 @@ Blockは、「行にどのようなスタイルを適用するか」・Inlineは
 
 マークダウンの変換結果を受け取り、HTML生成処理の入力用オブジェクトを生成することを責務に持つ。
 
-中継する役割のクラスを挟むことで、マークダウン/HTMLを処理するクラスはお互いのことを知る必要がなくなる。
-
-#### HTML入力オブジェクトの生成
-
-基本的には単なるマッピングだが、HTMLでは、リスト(ul, li)のようにネストした構造をとることがある。
-先ほどのBlock・Inlineをベースに、構造を拡張することでこれを実現する。
-
 リストを具体例に考えてみる。マークダウンでは`* から始まる行であるリストのスタイル`という情報のみ保持していたが、
 HTMLでは、ul・liそれぞれを表すものが必要である。
-ulを表すBlock, liを表すBlock, ulの終端を表すBlockといったように、よりHTMLへ近い形へ
+ulを表すBlockを親とし、childrenプロパティへliを表すBlockを持たせることで、よりHTMLへ近い形へ
 変換結果オブジェクトを変換する。HTMLと対応する形へ解釈できれば、HTMLを生成するオブジェクトは、
 入力をそのままHTMLのツリーへマッピングできるようになる。
 
----
-
-Blockは子にBlockまたはInlineを持つようになる。 これは、HTMLタグの階層構造に近い。
-このような構造をとることで、リストや引用文のような、連続して続くような記法にも対応できる。
+このように、中継する役割のクラスを挟むことで、マークダウン/HTMLを処理するクラスはお互いのことを知る必要がなくなる。
 
 
 ### HTML組み立て処理
