@@ -14,7 +14,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     entry_points={
-        'console_scripts': ['a_pompom_markdown_parse = a_pompom_markdown_parser.main:main']
+        'console_scripts': ['a_pompom_markdown_parse = a_pompom_markdown_parser.main:execute']
     },
     python_requires='>=3.10',
 )
