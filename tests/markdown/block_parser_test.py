@@ -1,7 +1,7 @@
 import pytest
 
-from app.markdown.inline_parser import InlineParser
-from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, CodeBlockParser, \
+from a_pompom_markdown_parser.markdown.inline_parser import InlineParser
+from a_pompom_markdown_parser.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, CodeBlockParser, \
     HorizontalRuleParser
 
 

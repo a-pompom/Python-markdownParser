@@ -1,7 +1,7 @@
 import dataclasses
 from typing import Union
 
-from app.element.inline import Inline
+from a_pompom_markdown_parser.element.inline import Inline
 
 Children = list[Union[Inline, 'Block']]
 

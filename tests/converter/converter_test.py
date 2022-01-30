@@ -1,7 +1,7 @@
 import pytest
 
-from app.converter.converter import Converter
-from app.markdown.parser import MarkdownParser
+from a_pompom_markdown_parser.converter.converter import Converter
+from a_pompom_markdown_parser.markdown.parser import MarkdownParser
 
 
 class TestConverter:

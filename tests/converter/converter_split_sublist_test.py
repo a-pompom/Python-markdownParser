@@ -1,8 +1,8 @@
 import pytest
 
-from app.converter.converter import split_to_convert_target
-from app.markdown.parser import MarkdownParser
-from app.element.block import Block
+from a_pompom_markdown_parser.converter.converter import split_to_convert_target
+from a_pompom_markdown_parser.markdown.parser import MarkdownParser
+from a_pompom_markdown_parser.element.block import Block
 
 
 # blockのリスト同士が同一とみなせるか判定

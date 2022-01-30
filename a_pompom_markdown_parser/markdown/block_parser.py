@@ -1,5 +1,5 @@
-from app.regex import regex
-from app.element.block import Children, Block, PlainBlock, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, \
+from a_pompom_markdown_parser.regex import regex
+from a_pompom_markdown_parser.element.block import Children, Block, PlainBlock, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, \
     CodeBlock, HorizontalRuleBlock
 
 # 正規表現のグループのうち、Blockの記法に属さない箇所のインデックス

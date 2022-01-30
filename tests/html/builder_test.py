@@ -1,11 +1,11 @@
 import pytest
 
-from app.html.builder import HtmlBuilder
-from app.element.block import ParseResult
-from app.markdown.parser import MarkdownParser
-from app.converter.converter import Converter
+from a_pompom_markdown_parser.html.builder import HtmlBuilder
+from a_pompom_markdown_parser.element.block import ParseResult
+from a_pompom_markdown_parser.markdown.parser import MarkdownParser
+from a_pompom_markdown_parser.converter.converter import Converter
 
-from app.settings import setting
+from a_pompom_markdown_parser.settings import setting
 
 LINE_BREAK = setting['newline_code']
 INDENT = setting['indent']

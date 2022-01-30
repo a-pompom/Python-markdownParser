@@ -1,9 +1,9 @@
-from app.element.block import Block, ParseResult
-from app.element.inline import Inline
-from app.html.block_builder import BlockBuilder
-from app.html.inline_builder import InlineBuilder
+from a_pompom_markdown_parser.element.block import Block, ParseResult
+from a_pompom_markdown_parser.element.inline import Inline
+from a_pompom_markdown_parser.html.block_builder import BlockBuilder
+from a_pompom_markdown_parser.html.inline_builder import InlineBuilder
 
-from app.settings import setting
+from a_pompom_markdown_parser.settings import setting
 
 
 class HtmlBuilder:

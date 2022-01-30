@@ -1,15 +1,15 @@
 import pytest
 
-from app.html.block_builder import BlockBuilder, HeadingBuilder, QuoteBuilder, ListBuilder, ListItemBuilder, \
+from a_pompom_markdown_parser.html.block_builder import BlockBuilder, HeadingBuilder, QuoteBuilder, ListBuilder, ListItemBuilder, \
     CodeBlockBuilder, HorizontalRuleBuilder
-from app.converter.converter import Converter
-from app.element.block import CodeBlock
-from app.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, HorizontalRuleParser, \
+from a_pompom_markdown_parser.converter.converter import Converter
+from a_pompom_markdown_parser.element.block import CodeBlock
+from a_pompom_markdown_parser.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, HorizontalRuleParser, \
     CodeBlockParser
-from app.markdown.inline_parser import InlineParser
-from app.markdown.parser import MarkdownParser
+from a_pompom_markdown_parser.markdown.inline_parser import InlineParser
+from a_pompom_markdown_parser.markdown.parser import MarkdownParser
 
-from app.settings import setting
+from a_pompom_markdown_parser.settings import setting
 
 from tests.factory.block_factory import ListItemFactory
 

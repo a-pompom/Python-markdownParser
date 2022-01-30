@@ -1,8 +1,8 @@
 from typing import Literal
 
-from app.element.block import ParseResult, Block, CodeBlock
-from app.markdown.block_parser import BlockParser, create_plain_block
-from app.markdown.inline_parser import InlineParser, create_plain_inline
+from a_pompom_markdown_parser.element.block import ParseResult, Block, CodeBlock
+from a_pompom_markdown_parser.markdown.block_parser import BlockParser, create_plain_block
+from a_pompom_markdown_parser.markdown.inline_parser import InlineParser, create_plain_inline
 
 
 class ParseMode:

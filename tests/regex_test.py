@@ -1,6 +1,6 @@
 import pytest
 
-from app.regex import regex
+from a_pompom_markdown_parser.regex import regex
 
 
 class TestRegex:

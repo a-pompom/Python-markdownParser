@@ -1,8 +1,8 @@
 import pytest
 
-from app.converter.converter import group_same_range_blocks
-from app.converter.block_converter import BlockConverter, QuoteConverter, ListConverter, CodeBlockConverter
-from app.markdown.parser import MarkdownParser
+from a_pompom_markdown_parser.converter.converter import group_same_range_blocks
+from a_pompom_markdown_parser.converter.block_converter import BlockConverter, QuoteConverter, ListConverter, CodeBlockConverter
+from a_pompom_markdown_parser.markdown.parser import MarkdownParser
 
 
 class TestBlockConverter:

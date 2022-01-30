@@ -1,8 +1,8 @@
 import pytest
 
-from app.html.inline_builder import InlineBuilder, LinkBuilder, CodeBuilder, ImageBuilder
-from app.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser
-from app.settings import setting
+from a_pompom_markdown_parser.html.inline_builder import InlineBuilder, LinkBuilder, CodeBuilder, ImageBuilder
+from a_pompom_markdown_parser.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser
+from a_pompom_markdown_parser.settings import setting
 
 
 class TestInlineBuilder:
