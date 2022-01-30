@@ -1,9 +1,9 @@
 import os
 import sys
 
-from app.markdown.parser import MarkdownParser
-from app.converter.converter import Converter
-from app.html.builder import HtmlBuilder
+from a_pompom_markdown_parser.markdown.parser import MarkdownParser
+from a_pompom_markdown_parser.converter.converter import Converter
+from a_pompom_markdown_parser.html.builder import HtmlBuilder
 
 IN_AND_OUT_ARG_COUNT = 3
 

@@ -1,7 +1,7 @@
 from typing import Generator, Literal
 
-from app.element.block import Block, ParseResult, CodeBlock, CodeChildBlock
-from app.converter.block_converter import BlockConverter
+from a_pompom_markdown_parser.element.block import Block, ParseResult, CodeBlock, CodeChildBlock
+from a_pompom_markdown_parser.converter.block_converter import BlockConverter
 
 
 class Converter:

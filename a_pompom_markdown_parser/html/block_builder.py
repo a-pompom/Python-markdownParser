@@ -1,7 +1,7 @@
-from app.element.block import Block, PlainBlock, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, ListItemBlock, \
+from a_pompom_markdown_parser.element.block import Block, PlainBlock, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, ListItemBlock, \
     CodeBlock, HorizontalRuleBlock
 
-from app.settings import setting
+from a_pompom_markdown_parser.settings import setting
 
 # 全体で参照する設定値
 LINE_BREAK = setting['newline_code']

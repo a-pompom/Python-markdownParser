@@ -1,6 +1,6 @@
 import pytest
 
-from app.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser
+from a_pompom_markdown_parser.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser
 
 
 class TestInlineParser:

@@ -1,5 +1,5 @@
 from typing import TypeGuard
-from app.element.block import Block, PlainBlock, ParagraphBlock, QuoteBlock, ListBlock, ListItemBlock, ICodeBlock, \
+from a_pompom_markdown_parser.element.block import Block, PlainBlock, ParagraphBlock, QuoteBlock, ListBlock, ListItemBlock, ICodeBlock, \
     CodeBlock
 
 

@@ -1,6 +1,6 @@
 import pytest
 
-from app.markdown.parser import MarkdownParser
+from a_pompom_markdown_parser.markdown.parser import MarkdownParser
 
 
 class TestMarkdownParser:

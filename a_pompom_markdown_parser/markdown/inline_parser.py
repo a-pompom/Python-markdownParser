@@ -1,5 +1,5 @@
-from app.regex import regex
-from app.element.inline import Inline, PlainInline, LinkInline, CodeInline, ImageInline
+from a_pompom_markdown_parser.regex import regex
+from a_pompom_markdown_parser.element.inline import Inline, PlainInline, LinkInline, CodeInline, ImageInline
 
 
 class InlineParser:

@@ -1,5 +1,5 @@
-from app.element.inline import Inline, LinkInline, CodeInline, ImageInline
-from app.settings import setting
+from a_pompom_markdown_parser.element.inline import Inline, LinkInline, CodeInline, ImageInline
+from a_pompom_markdown_parser.settings import setting
 
 
 class InlineBuilder:

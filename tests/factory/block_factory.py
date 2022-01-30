@@ -1,6 +1,6 @@
-from app.element.block import ListItemBlock, CodeChildBlock
-from app.element.inline import PlainInline
-from app.markdown.inline_parser import InlineParser
+from a_pompom_markdown_parser.element.block import ListItemBlock, CodeChildBlock
+from a_pompom_markdown_parser.element.inline import PlainInline
+from a_pompom_markdown_parser.markdown.inline_parser import InlineParser
 
 
 # Block要素のファクトリクラスは、コンバータでしか生成できないなど、インスタンスを
