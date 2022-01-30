@@ -56,6 +56,14 @@ def parse_md_to_html(in_file_path: str, out_file_path: str):
         fw.write(html_builder.build(html_input))
 
 
+def execute():
+    """
+    マークダウン文字列をHTMLへ変換
+    """
+    validate_args()
+    parse_md_to_html(sys.argv[1], sys.argv[2])
+
+
 if __name__ == '__main__':
     validate_args()
     parse_md_to_html(sys.argv[1], sys.argv[2])
