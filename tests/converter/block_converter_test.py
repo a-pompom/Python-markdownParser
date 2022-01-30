@@ -199,16 +199,16 @@ class TestCodeBlockConverter:
             (
                 ['```Python', '# comment', 'instance = Klass()', '```'],
                 ('[CodeBlock: language=Python | Child of CodeBlock -> '
-                 '[Plain: indent_depth=2 | Child of Plain -> Plain: text=# comment]'
+                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=# comment]'
                  ' | Child of CodeBlock -> '
-                 '[Plain: indent_depth=2 | Child of Plain -> Plain: text=instance = Klass()]]')
+                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=instance = Klass()]]')
             ),
             (
                 ['```', '## [参考](url)', '> 引用ここまで'],
                 ('[CodeBlock: language= | Child of CodeBlock -> '
-                 '[Plain: indent_depth=2 | Child of Plain -> Plain: text=## [参考](url)]'
+                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=## [参考](url)]'
                  ' | Child of CodeBlock -> '
-                 '[Plain: indent_depth=2 | Child of Plain -> Plain: text=> 引用ここまで]]')
+                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=> 引用ここまで]]')
             ),
         ],
         ids=['code', 'not parsed']

@@ -80,8 +80,8 @@ class ListConverter(IConverter):
 class CodeBlockConverter(IConverter):
     """ コードブロック要素を組み立てることを責務に持つ """
 
-    # pre, codeタグ配下で描画されるため、要素は2階層分インデント
-    INDENT_DEPTH = 2
+    # HTML上でスペースが含まれないよう、内部のインデント幅は0とする
+    INDENT_DEPTH = 0
 
     def is_target(self, blocks: list[Block]) -> TypeGuard[list[Block]]:
         return all([isinstance(block, ICodeBlock) for block in blocks])
