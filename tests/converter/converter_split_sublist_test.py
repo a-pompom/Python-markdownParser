@@ -2,15 +2,14 @@ import pytest
 
 from a_pompom_markdown_parser.converter.converter import split_to_convert_target
 from a_pompom_markdown_parser.markdown.parser import MarkdownParser
-from a_pompom_markdown_parser.element.block import Block
+from a_pompom_markdown_parser.element.block import Block, ParagraphBlock, QuoteBlock, HeadingBlock
+from a_pompom_markdown_parser.element.inline import PlainInline
 
 
 # blockのリスト同士が同一とみなせるか判定
-def assert_same_block_list(blocks: list[Block], expected_list: list[str]):
-    actual = ''.join([repr(block) for block in blocks])
-    expected = ''.join(expected_list)
-
-    assert actual == expected
+def assert_same_block_list(actual_list: list[Block], expected_list: list[Block]):
+    for actual, expected in zip(actual_list, expected_list):
+        assert actual == expected
 
 
 class TestSplitToConvertTarget:
@@ -18,63 +17,101 @@ class TestSplitToConvertTarget:
 
     # 1種類のBlock要素のみで構成
     @pytest.mark.parametrize(
-        ('lines', 'expected_list'),
+        ('lines', 'expected_list_of_list'),
         [
             (
                 ['first plain text', 'second plain text'],
-                [['[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=first plain text]',
-                  '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=second plain text]']]
+                [
+                    [
+                        ParagraphBlock(indent_depth=0, children=[
+                            PlainInline(text='first plain text')
+                        ]),
+                        ParagraphBlock(indent_depth=0, children=[
+                            PlainInline(text='second plain text')
+                        ])
+                    ]
+                ]
             ),
             (
                 ['> 私は昨日', '> こう言いました'],
-                [['[Quote: | Child of Quote -> Plain: text=私は昨日]',
-                  '[Quote: | Child of Quote -> Plain: text=こう言いました]']]
+                [
+                    [
+                        QuoteBlock(children=[
+                            PlainInline(text='私は昨日')
+                        ]),
+                        QuoteBlock(children=[
+                            PlainInline(text='こう言いました')
+                        ]),
+                    ]
+                ]
             ),
         ],
         ids=['only plain', 'only block quote']
     )
-    def test_only_single_type_block(self, lines: list[str], expected_list: list[list[str]]):
+    def test_only_single_type_block(self, lines: list[str], expected_list_of_list: list[list[Block]]):
         # GIVEN
         sut = split_to_convert_target
         blocks = MarkdownParser().parse(lines).content
 
         # WHEN
-        i = 0
-        for convert_target in sut(blocks):
+        for convert_target, expected_list in zip(sut(blocks), expected_list_of_list):
             # THEN
-            assert_same_block_list(convert_target, expected_list[i])
-            i += 1
+            assert_same_block_list(convert_target, expected_list)
 
     # 複数の種類のBlock要素が混在
     @pytest.mark.parametrize(
-        ('lines', 'expected_list'),
+        ('lines', 'expected_list_of_list'),
         [
             (
                 ['# マークダウンとは', '> マークダウンとは', '> これです'],
-                [['[Heading: size=1 | Child of Heading -> Plain: text=マークダウンとは]'],
-                 ['[Quote: | Child of Quote -> Plain: text=マークダウンとは]',
-                  '[Quote: | Child of Quote -> Plain: text=これです]']
-                 ]
+                [
+                    [
+                        HeadingBlock(size=1, children=[
+                            PlainInline(text='マークダウンとは')
+                        ])
+                    ],
+                    [
+                        QuoteBlock(children=[
+                            PlainInline(text='マークダウンとは')
+                        ]),
+                        QuoteBlock(children=[
+                            PlainInline(text='これです')
+                        ])
+                    ]
+                ]
             ),
             (
                 ['> 昨日私はこう言いました', '一日が過ぎました', '> 今日私はこう言いました', '> 帰りたい'],
-                [['[Quote: | Child of Quote -> Plain: text=昨日私はこう言いました]'],
-                 ['[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=一日が過ぎました]'],
-                 ['[Quote: | Child of Quote -> Plain: text=今日私はこう言いました]',
-                  '[Quote: | Child of Quote -> Plain: text=帰りたい]']
-                 ]
+                [
+                    [
+                        QuoteBlock(children=[
+                            PlainInline(text='昨日私はこう言いました')
+                        ])
+                    ],
+                    [
+                        ParagraphBlock(indent_depth=0, children=[
+                            PlainInline(text='一日が過ぎました')
+                        ])
+                    ],
+                    [
+                        QuoteBlock(children=[
+                            PlainInline(text='今日私はこう言いました')
+                        ]),
+                        QuoteBlock(children=[
+                            PlainInline(text='帰りたい')
+                        ]),
+                    ]
+                ]
             ),
         ],
         ids=['two type', 'two type between']
     )
-    def test_multiple_type_blocks(self, lines: list[str], expected_list: list[list[str]]):
+    def test_multiple_type_blocks(self, lines: list[str], expected_list_of_list: list[list[Block]]):
         # GIVEN
         sut = split_to_convert_target
         blocks = MarkdownParser().parse(lines).content
 
         # WHEN
-        i = 0
-        for convert_target in sut(blocks):
+        for convert_target, expected_list in zip(sut(blocks), expected_list_of_list):
             # THEN
-            assert_same_block_list(convert_target, expected_list[i])
-            i += 1
+            assert_same_block_list(convert_target, expected_list)
