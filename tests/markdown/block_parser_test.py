@@ -1,7 +1,12 @@
 import pytest
 
+from a_pompom_markdown_parser.element.block import Block, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, \
+    CodeBlock, \
+    HorizontalRuleBlock
+from a_pompom_markdown_parser.element.inline import PlainInline, LinkInline
 from a_pompom_markdown_parser.markdown.inline_parser import InlineParser
-from a_pompom_markdown_parser.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, CodeBlockParser, \
+from a_pompom_markdown_parser.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, \
+    CodeBlockParser, \
     HorizontalRuleParser
 
 
@@ -30,27 +35,37 @@ class TestBlockParser:
         [
             (
                 'plain text',
-                '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=plain text]'
+                ParagraphBlock(indent_depth=0, children=[
+                    PlainInline(text='plain text')
+                ])
             ),
             (
                 '## awesome heading',
-                '[Heading: size=2 | Child of Heading -> Plain: text=awesome heading]'
+                HeadingBlock(size=2, children=[
+                    PlainInline(text='awesome heading')
+                ])
             ),
             (
                 '> this is a pen.',
-                '[Quote: | Child of Quote -> Plain: text=this is a pen.]'
+                QuoteBlock(children=[
+                    PlainInline(text='this is a pen.')
+                ])
             ),
             (
                 '* 手順その1',
-                '[List: indent_depth=0 | Child of List -> Plain: text=手順その1]'
+                ListBlock(indent_depth=0, children=[
+                    PlainInline(text='手順その1')
+                ])
             ),
             (
                 '```JSX',
-                '[CodeBlock: language=JSX | Child of CodeBlock -> Plain: text=]'
+                CodeBlock(language='JSX', children=[
+                    PlainInline(text='')
+                ])
             ),
         ],
         ids=['plain', 'heading', 'quote', 'list', 'code_block'])
-    def test_parse(self, text: str, expected: str):
+    def test_parse(self, text: str, expected: Block):
         # GIVEN
         sut = BlockParser()
         inline_parser = InlineParser()
@@ -59,7 +74,7 @@ class TestBlockParser:
         actual = sut.parse(text, children)
 
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
 
 class TestHeading:
@@ -105,21 +120,26 @@ class TestHeading:
         [
             (
                 '# this is heading',
-                '[Heading: size=1 | Child of Heading -> Plain: text=this is heading]'
+                HeadingBlock(size=1, children=[
+                    PlainInline(text='this is heading')
+                ])
             ),
             (
                 '###  3rd heading',
-                '[Heading: size=3 | Child of Heading -> Plain: text= 3rd heading]'
+                HeadingBlock(size=3, children=[
+                    PlainInline(text=' 3rd heading')
+                ])
             ),
             (
                 '## 2nd heading [link](url) text',
-                ('[Heading: size=2 | '
-                 'Child of Heading -> Plain: text=2nd heading  | '
-                 'Child of Heading -> Link: text=link, href=url | '
-                 'Child of Heading -> Plain: text= text]')
+                HeadingBlock(size=2, children=[
+                    PlainInline(text='2nd heading '),
+                    LinkInline(href='url', text='link'),
+                    PlainInline(text=' text')
+                ])
             )
         ], ids=['1st heading', '3rd heading', '2nd heading with link'])
-    def test_parse(self, heading_text: str, expected: str):
+    def test_parse(self, heading_text: str, expected: HeadingBlock):
         # GIVEN
         sut = HeadingParser()
         inline_parser = InlineParser()
@@ -128,7 +148,7 @@ class TestHeading:
         actual = sut.parse(heading_text, children)
 
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
 
 class TestQuote:
@@ -177,23 +197,27 @@ class TestQuote:
         [
             (
                 '> awesome text',
-                '[Quote: | Child of Quote -> Plain: text=awesome text]'
+                QuoteBlock(children=[
+                    PlainInline(text='awesome text')
+                ])
             ),
             (
                 '> すごい発言',
-                '[Quote: | Child of Quote -> Plain: text=すごい発言]'
+                QuoteBlock(children=[
+                    PlainInline(text='すごい発言')
+                ])
             ),
         ],
         ids=['normal text', 'full width text']
     )
-    def test_parse(self, text: str, expected: str):
+    def test_parse(self, text: str, expected: QuoteBlock):
         # GIVEN
         sut = QuoteParser()
         inline_parser = InlineParser()
         # WHEN
         actual = sut.parse(text, inline_parser.parse(sut.extract_text(text)))
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
 
 class TestList:
@@ -239,27 +263,33 @@ class TestList:
         [
             (
                 '* first of all',
-                '[List: indent_depth=0 | Child of List -> Plain: text=first of all]'
+                ListBlock(indent_depth=0, children=[
+                    PlainInline(text='first of all')
+                ])
             ),
             (
                 '- 1st',
-                '[List: indent_depth=0 | Child of List -> Plain: text=1st]'
+                ListBlock(indent_depth=0, children=[
+                    PlainInline(text='1st')
+                ])
             ),
             (
                 '- 最初',
-                '[List: indent_depth=0 | Child of List -> Plain: text=最初]'
+                ListBlock(indent_depth=0, children=[
+                    PlainInline(text='最初')
+                ])
             ),
         ],
         ids=['* list', '- list', 'full width list']
     )
-    def test_parse(self, text: str, expected: str):
+    def test_parse(self, text: str, expected: ListBlock):
         # GIVEN
         sut = ListParser()
         children = InlineParser().parse(sut.extract_text(text))
         # WHEN
         actual = sut.parse(text, children)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
 
 class TestCodeBlock:
@@ -302,23 +332,27 @@ class TestCodeBlock:
         [
             (
                 '```',
-                '[CodeBlock: language= | Child of CodeBlock -> Plain: text=]'
+                CodeBlock(language='', children=[
+                    PlainInline(text='')
+                ])
             ),
             (
                 '```HTML',
-                '[CodeBlock: language=HTML | Child of CodeBlock -> Plain: text=]'
+                CodeBlock(language='HTML', children=[
+                    PlainInline(text='')
+                ])
             ),
         ],
         ids=['empty language', 'some language']
     )
-    def test_parse(self, text: str, expected: str):
+    def test_parse(self, text: str, expected: CodeBlock):
         # GIVEN
         sut = CodeBlockParser()
         children = InlineParser().parse(sut.extract_text(text))
         # WHEN
         actual = sut.parse(text, children)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
 
 class TestHorizontalRule:
@@ -363,15 +397,17 @@ class TestHorizontalRule:
         [
             (
                 '---',
-                '[HorizontalRule: | Child of HorizontalRule -> Plain: text=]'
+                HorizontalRuleBlock(children=[
+                    PlainInline(text='')
+                ])
             )
         ]
     )
-    def test_parse(self, text: str, expected: str):
+    def test_parse(self, text: str, expected: HorizontalRuleBlock):
         # GIVEN
         sut = HorizontalRuleParser()
         children = InlineParser().parse(sut.extract_text(text))
         # WHEN
         actual = sut.parse(text, children)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected

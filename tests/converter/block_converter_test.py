@@ -1,7 +1,11 @@
 import pytest
 
 from a_pompom_markdown_parser.converter.converter import group_same_range_blocks
-from a_pompom_markdown_parser.converter.block_converter import BlockConverter, QuoteConverter, ListConverter, CodeBlockConverter
+from a_pompom_markdown_parser.element.block import Block, ParagraphBlock, QuoteBlock, ListBlock, \
+    ListItemBlock, CodeBlock, PlainBlock
+from a_pompom_markdown_parser.element.inline import PlainInline
+from a_pompom_markdown_parser.converter.block_converter import BlockConverter, QuoteConverter, ListConverter, \
+    CodeBlockConverter
 from a_pompom_markdown_parser.markdown.parser import MarkdownParser
 
 
@@ -13,36 +17,62 @@ class TestBlockConverter:
     """
 
     @pytest.mark.parametrize(
-        ('lines', 'expected'),
+        ('lines', 'expected_list'),
         [
-            (['今日はいい天気です。', '日記を終わります。'],
-             ('[[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=今日はいい天気です。], '
-              '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=日記を終わります。]]')),
+            (
+                ['今日はいい天気です。', '日記を終わります。'],
+                [
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='今日はいい天気です。')
+                    ]),
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='日記を終わります。')
+                    ])
+                ]
+            ),
 
-            (['> いい感じの言葉を', '> 引用します。'],
-             ('[[Quote: | Child of Quote -> '
-              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=いい感じの言葉を]'
-              ' | Child of Quote -> '
-              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=引用します。]]]')),
+            (
+                ['> いい感じの言葉を', '> 引用します。'],
+                [
+                    QuoteBlock(children=[
+                        ParagraphBlock(indent_depth=1, children=[
+                            PlainInline(text='いい感じの言葉を')
+                        ]),
+                        ParagraphBlock(indent_depth=1, children=[
+                            PlainInline(text='引用します。')
+                        ])
+                    ])
+                ]
+            ),
 
-            (['* 1st', '* 2nd', '* 3rd'],
-             ('[[List: indent_depth=0 | Child of List -> '
-              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=1st]'
-              ' | Child of List -> '
-              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=2nd]'
-              ' | Child of List -> '
-              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=3rd]]]')),
+            (
+                ['* 1st', '* 2nd', '* 3rd'],
+                [
+                    ListBlock(indent_depth=0, children=[
+                        ListItemBlock(indent_depth=1, children=[
+                            PlainInline(text='1st')
+                        ]),
+                        ListItemBlock(indent_depth=1, children=[
+                            PlainInline(text='2nd')
+                        ]),
+                        ListItemBlock(indent_depth=1, children=[
+                            PlainInline(text='3rd')
+                        ]),
+                    ])
+                ]
+            ),
         ],
         ids=['plain', 'quote', 'list']
     )
-    def test_convert(self, lines: list[str], expected: str):
+    def test_convert(self, lines: list[str], expected_list: list[Block]):
         # GIVEN
         sut = BlockConverter()
         markdown_result = MarkdownParser().parse(lines)
         # WHEN
-        actual = sut.convert(markdown_result.content)
+        actual_list = sut.convert(markdown_result.content)
         # THEN
-        assert repr(actual) == expected
+        for actual, expected in zip(actual_list, expected_list):
+            assert actual == expected
 
 
 class TestQuoteConverter:
@@ -69,17 +99,29 @@ class TestQuoteConverter:
     @pytest.mark.parametrize(
         ('lines', 'expected'),
         [
-            (['> quote text'],
-             '[Quote: | Child of Quote -> [Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=quote text]]'),
-            (['> Pythonは', '> プログラミング言語です'],
-             ('[Quote: | Child of Quote -> '
-              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=Pythonは] | Child of Quote -> '
-              '[Paragraph: indent_depth=1 | Child of Paragraph -> Plain: text=プログラミング言語です]]')
-             ),
+            (
+                ['> quote text'],
+                QuoteBlock(children=[
+                    ParagraphBlock(indent_depth=1, children=[
+                        PlainInline(text='quote text')
+                    ])
+                ])
+            ),
+            (
+                ['> Pythonは', '> プログラミング言語です'],
+                QuoteBlock(children=[
+                    ParagraphBlock(indent_depth=1, children=[
+                        PlainInline(text='Pythonは')
+                    ]),
+                    ParagraphBlock(indent_depth=1, children=[
+                        PlainInline(text='プログラミング言語です')
+                    ])
+                ])
+            ),
         ],
         ids=['single', 'multiple']
     )
-    def test_convert(self, lines: list[str], expected: str):
+    def test_convert(self, lines: list[str], expected: QuoteBlock):
         # GIVEN
         sut = QuoteConverter()
         markdown_result = MarkdownParser().parse(lines)
@@ -93,7 +135,7 @@ class TestQuoteConverter:
         # noinspection PyTypeChecker
         actual = sut.convert(markdown_result.content)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
 
 class TestListConverter:
@@ -121,19 +163,29 @@ class TestListConverter:
     @pytest.mark.parametrize(
         ('lines', 'expected'),
         [
-            (['- method1'],
-             ('[List: indent_depth=0 | Child of List -> '
-              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=method1]]')
-             ),
-            (['* item1', '* item2'],
-             ('[List: indent_depth=0 | Child of List -> '
-              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=item1] | Child of List -> '
-              '[ListItem: indent_depth=1 | Child of ListItem -> Plain: text=item2]]')
-             ),
+            (
+                ['- method1'],
+                ListBlock(indent_depth=0, children=[
+                    ListItemBlock(indent_depth=1, children=[
+                        PlainInline(text='method1')
+                    ])
+                ])
+            ),
+            (
+                ['* item1', '* item2'],
+                ListBlock(indent_depth=0, children=[
+                    ListItemBlock(indent_depth=1, children=[
+                        PlainInline(text='item1')
+                    ]),
+                    ListItemBlock(indent_depth=1, children=[
+                        PlainInline(text='item2')
+                    ])
+                ])
+            ),
         ],
         ids=['single', 'multiple']
     )
-    def test_convert(self, lines: list[str], expected: str):
+    def test_convert(self, lines: list[str], expected: ListBlock):
         sut = ListConverter()
         markdown_result = MarkdownParser().parse(lines)
 
@@ -146,7 +198,7 @@ class TestListConverter:
         # noinspection PyTypeChecker
         actual = sut.convert(markdown_result.content)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
 
 class TestCodeBlockConverter:
@@ -198,22 +250,30 @@ class TestCodeBlockConverter:
         [
             (
                 ['```Python', '# comment', 'instance = Klass()', '```'],
-                ('[CodeBlock: language=Python | Child of CodeBlock -> '
-                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=# comment]'
-                 ' | Child of CodeBlock -> '
-                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=instance = Klass()]]')
+                CodeBlock(language='Python', children=[
+                    PlainBlock(indent_depth=0, children=[
+                        PlainInline(text='# comment')
+                    ]),
+                    PlainBlock(indent_depth=0, children=[
+                        PlainInline(text='instance = Klass()')
+                    ])
+                ])
             ),
             (
                 ['```', '## [参考](url)', '> 引用ここまで'],
-                ('[CodeBlock: language= | Child of CodeBlock -> '
-                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=## [参考](url)]'
-                 ' | Child of CodeBlock -> '
-                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=> 引用ここまで]]')
+                CodeBlock(language='', children=[
+                    PlainBlock(indent_depth=0, children=[
+                        PlainInline(text='## [参考](url)')
+                    ]),
+                    PlainBlock(indent_depth=0, children=[
+                        PlainInline(text='> 引用ここまで')
+                    ])
+                ])
             ),
         ],
         ids=['code', 'not parsed']
     )
-    def test_convert(self, lines: list[str], expected: str):
+    def test_convert(self, lines: list[str], expected: CodeBlock):
         # GIVEN
         sut = CodeBlockConverter()
         blocks = group_same_range_blocks(MarkdownParser().parse(lines).content)
@@ -227,4 +287,4 @@ class TestCodeBlockConverter:
         # noinspection PyTypeChecker
         actual = sut.convert(blocks)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
