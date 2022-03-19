@@ -6,6 +6,9 @@ class Inline:
     """ aタグのようなインラインスタイルを保持 """
     text: str
 
+    def __eq__(self, other):
+        raise NotImplementedError()
+
 
 @dataclasses.dataclass
 class PlainInline(Inline):
@@ -13,6 +16,9 @@ class PlainInline(Inline):
 
     def __repr__(self):
         return f'Plain: text={self.text}'
+
+    def __eq__(self, other: 'PlainInline'):
+        return self.text == other.text
 
 
 @dataclasses.dataclass
@@ -23,6 +29,9 @@ class LinkInline(Inline):
     def __repr__(self):
         return f'Link: text={self.text}, href={self.href}'
 
+    def __eq__(self, other: 'LinkInline'):
+        return self.href == other.href and self.text == other.text
+
 
 @dataclasses.dataclass
 class CodeInline(Inline):
@@ -30,6 +39,9 @@ class CodeInline(Inline):
 
     def __repr__(self):
         return f'Code: text={self.text}'
+
+    def __eq__(self, other: 'CodeInline'):
+        return self.text == other.text
 
 
 @dataclasses.dataclass
@@ -40,3 +52,6 @@ class ImageInline(Inline):
 
     def __repr__(self):
         return f'Image: src={self.src}, alt={self.alt}'
+
+    def __eq__(self, other: 'ImageInline'):
+        return self.src == other.src and self.alt == other.alt

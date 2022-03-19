@@ -1,5 +1,6 @@
 import pytest
 
+from a_pompom_markdown_parser.element.inline import LinkInline, CodeInline, ImageInline
 from a_pompom_markdown_parser.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser
 
 
@@ -76,8 +77,8 @@ class TestLink:
     @pytest.mark.parametrize(
         ('link_text', 'expected'),
         [
-            ('[link](url)', 'Link: text=link, href=url'),
-            ('[参考](http)', 'Link: text=参考, href=http'),
+            ('[link](url)', LinkInline(href='url', text='link')),
+            ('[参考](http)', LinkInline(href='http', text='参考')),
         ],
         ids=['normal', 'full width'])
     def test_parse(self, link_text: str, expected: str):
@@ -86,7 +87,7 @@ class TestLink:
         # WHEN
         actual = sut.parse(link_text)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
 
 class TestCode:
@@ -138,8 +139,8 @@ class TestCode:
     @pytest.mark.parametrize(
         ('text', 'expected'),
         [
-            ('`#Python comment`', 'Code: text=#Python comment'),
-            ('`素敵なコード`', 'Code: text=素敵なコード'),
+            ('`#Python comment`', CodeInline(text='#Python comment')),
+            ('`素敵なコード`', CodeInline(text='素敵なコード')),
         ],
         ids=['normal', 'full width']
     )
@@ -149,7 +150,7 @@ class TestCode:
         # WHEN
         actual = sut.parse(text)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
 
 class TestImage:
@@ -205,8 +206,8 @@ class TestImage:
     @pytest.mark.parametrize(
         ('text', 'expected'),
         [
-            ('![awesome image](/image.png)', 'Image: src=/image.png, alt=awesome image'),
-            ('![画像](/image/例のアレ.png)', 'Image: src=/image/例のアレ.png, alt=画像'),
+            ('![awesome image](/image.png)', ImageInline(src='/image.png', alt='awesome image', text='')),
+            ('![画像](/image/例のアレ.png)', ImageInline(src='/image/例のアレ.png', alt='画像', text='')),
         ],
         ids=['normal', 'full width'])
     def test_parse(self, text: str, expected: str):
@@ -215,4 +216,4 @@ class TestImage:
         # WHEN
         actual = sut.parse(text)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
