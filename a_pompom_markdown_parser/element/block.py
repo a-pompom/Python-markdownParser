@@ -143,3 +143,12 @@ class HorizontalRuleBlock(Block):
     def __repr__(self):
         child_repr_text = create_repr_children('HorizontalRule', self.children)
         return f'[HorizontalRule:{child_repr_text}]'
+
+
+@dataclasses.dataclass
+class TableOfContentsBlock(Block):
+    """ 目次要素と対応する要素を保持 マークダウンでは、[toc]のような表現と対応させる """
+
+    def __repr__(self):
+        child_repr_text = create_repr_children('TableOfContents', self.children)
+        return f'[TableOfContents:{child_repr_text}]'
