@@ -1,5 +1,6 @@
 import pytest
 
+from a_pompom_markdown_parser.element.inline import Inline, PlainInline, LinkInline, CodeInline, ImageInline
 from a_pompom_markdown_parser.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser
 
 
@@ -7,22 +8,27 @@ class TestInlineParser:
     """ 行文字列からインライン記法を表現するInline要素を生成できるか検証 """
 
     # Inline要素生成
-    @pytest.mark.parametrize(('text', 'expected'), [
+    @pytest.mark.parametrize(('text', 'expected_list'), [
         (
             'plain text',
-            ['Plain: text=plain text']
+            [
+                PlainInline(text='plain text')
+            ]
         ),
         (
             'this is [google link](https://www.google.com/)',
-            ['Plain: text=this is ', 'Link: text= google link, href=https://www.google.com/']
+            [
+                PlainInline(text='this is '),
+                LinkInline(href='https://www.google.com/', text='google link')
+            ]
         )
     ], ids=['plain', 'link'])
-    def test_parse(self, text: str, expected: list[str]):
+    def test_parse(self, text: str, expected_list: list[Inline]):
         sut = InlineParser()
-        actual = sut.parse(text)
+        actual_list = sut.parse(text)
 
-        for actual_inline, expected_text in zip(actual, expected):
-            repr(actual_inline) == expected_text
+        for actual, expected in zip(actual_list, expected_list):
+            assert actual == expected
 
 
 class TestLink:
@@ -76,17 +82,17 @@ class TestLink:
     @pytest.mark.parametrize(
         ('link_text', 'expected'),
         [
-            ('[link](url)', 'Link: text=link, href=url'),
-            ('[参考](http)', 'Link: text=参考, href=http'),
+            ('[link](url)', LinkInline(href='url', text='link')),
+            ('[参考](http)', LinkInline(href='http', text='参考')),
         ],
         ids=['normal', 'full width'])
-    def test_parse(self, link_text: str, expected: str):
+    def test_parse(self, link_text: str, expected: LinkInline):
         # GIVEN
         sut = LinkParser()
         # WHEN
         actual = sut.parse(link_text)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
 
 class TestCode:
@@ -138,18 +144,18 @@ class TestCode:
     @pytest.mark.parametrize(
         ('text', 'expected'),
         [
-            ('`#Python comment`', 'Code: text=#Python comment'),
-            ('`素敵なコード`', 'Code: text=素敵なコード'),
+            ('`#Python comment`', CodeInline(text='#Python comment')),
+            ('`素敵なコード`', CodeInline(text='素敵なコード')),
         ],
         ids=['normal', 'full width']
     )
-    def test_parse(self, text: str, expected: str):
+    def test_parse(self, text: str, expected: CodeInline):
         # GIVEN
         sut = CodeParser()
         # WHEN
         actual = sut.parse(text)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
 
 class TestImage:
@@ -205,14 +211,14 @@ class TestImage:
     @pytest.mark.parametrize(
         ('text', 'expected'),
         [
-            ('![awesome image](/image.png)', 'Image: src=/image.png, alt=awesome image'),
-            ('![画像](/image/例のアレ.png)', 'Image: src=/image/例のアレ.png, alt=画像'),
+            ('![awesome image](/image.png)', ImageInline(src='/image.png', alt='awesome image', text='')),
+            ('![画像](/image/例のアレ.png)', ImageInline(src='/image/例のアレ.png', alt='画像', text='')),
         ],
         ids=['normal', 'full width'])
-    def test_parse(self, text: str, expected: str):
+    def test_parse(self, text: str, expected: ImageInline):
         # GIVEN
         sut = ImageParser()
         # WHEN
         actual = sut.parse(text)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected

@@ -1,5 +1,8 @@
 import pytest
 
+from a_pompom_markdown_parser.element.block import ParseResult, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, \
+    HorizontalRuleBlock, CodeBlock, PlainBlock
+from a_pompom_markdown_parser.element.inline import PlainInline, LinkInline, CodeInline, ImageInline
 from a_pompom_markdown_parser.markdown.parser import MarkdownParser
 
 
@@ -12,38 +15,60 @@ class TestMarkdownParser:
         [
             (
                 ['plain text'],
-                '[Paragraph: indent_depth=0 | Child of Paragraph -> Plain: text=plain text]',
+                ParseResult(content=[
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='plain text')
+                    ])
+                ])
             ),
 
             (
                 ['## awesome heading'],
-                '[Heading: size=2 | Child of Heading -> Plain: text=awesome heading]'
+                ParseResult(content=[
+                    HeadingBlock(size=2, children=[
+                        PlainInline(text='awesome heading')
+                    ])
+                ])
             ),
 
             (
                 ['> amazing quote text'],
-                '[Quote: | Child of Quote -> Plain: text=amazing quote text]'
+                ParseResult(content=[
+                    QuoteBlock(children=[
+                        PlainInline(text='amazing quote text')
+                    ])
+                ])
             ),
 
             (
                 ['* 1st element', '* 2nd element'],
-                ('[List: indent_depth=0 | Child of List -> Plain: text=1st element] '
-                 '[List: indent_depth=0 | Child of List -> Plain: text=2nd element]')
+                ParseResult(content=[
+                    ListBlock(indent_depth=0, children=[
+                        PlainInline(text='1st element')
+                    ]),
+                    ListBlock(indent_depth=0, children=[
+                        PlainInline(text='2nd element')
+                    ])
+                ])
             ),
 
             (
                 ['---'],
-                '[HorizontalRule: | Child of HorizontalRule -> Plain: text=]'
+                ParseResult(content=[
+                    HorizontalRuleBlock(children=[
+                        PlainInline(text='')
+                    ])
+                ])
             ),
         ],
         ids=['plain', 'heading', 'quote', 'list', 'horizontal rule'])
-    def test_parse_block(self, lines: list[str], expected: str):
+    def test_parse_block(self, lines: list[str], expected: ParseResult):
         # GIVEN
         sut = MarkdownParser()
         # WHEN
         actual = sut.parse(lines)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
     # Inline要素をパースできるか
     @pytest.mark.parametrize(
@@ -51,34 +76,43 @@ class TestMarkdownParser:
         [
             (
                 ['[公式](https://docs.python.org/3/)を参照'],
-                ('[Paragraph: indent_depth=0 | '
-                 'Child of Paragraph -> Link: text=公式, href=https://docs.python.org/3/ | '
-                 'Child of Paragraph -> Plain: text=を参照]')
+                ParseResult(content=[
+                    ParagraphBlock(indent_depth=0, children=[
+                        LinkInline(href='https://docs.python.org/3/', text='公式'),
+                        PlainInline(text='を参照')
+                    ])
+                ])
             ),
 
             (
                 ['記号`!`は否定を表現します。'],
-                ('[Paragraph: indent_depth=0 | '
-                 'Child of Paragraph -> Plain: text=記号 | '
-                 'Child of Paragraph -> Code: text=! | '
-                 'Child of Paragraph -> Plain: text=は否定を表現します。]')
+                ParseResult(content=[
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='記号'),
+                        CodeInline(text='!'),
+                        PlainInline(text='は否定を表現します。')
+                    ])
+                ])
             ),
 
             (
                 ['![image](https://avatars.githubusercontent.com/u/43694794?v=4)'],
-                ('[Paragraph: indent_depth=0 | '
-                 'Child of Paragraph -> Image: src=https://avatars.githubusercontent.com/u/43694794?v=4, alt=image]')
+                ParseResult(content=[
+                    ParagraphBlock(indent_depth=0, children=[
+                        ImageInline(src='https://avatars.githubusercontent.com/u/43694794?v=4', alt='image', text='')
+                    ])
+                ])
             ),
         ],
         ids=['link', 'code', 'image']
     )
-    def test_parse_inline(self, lines: list[str], expected: str):
+    def test_parse_inline(self, lines: list[str], expected: ParseResult):
         # GIVEN
         sut = MarkdownParser()
         # WHEN
         actual = sut.parse(lines)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
     # Block/Inline要素が混在した行をパースできるか
     @pytest.mark.parametrize(
@@ -89,22 +123,26 @@ class TestMarkdownParser:
                     '## [Google](https://www.google.com/)とは',
                     '> `Google`の概要',
                 ],
-                ('[Heading: size=2 | Child of Heading -> '
-                 'Link: text=Google, href=https://www.google.com/ | Child of Heading -> '
-                 'Plain: text=とは] '
-                 '[Quote: | Child of Quote -> '
-                 'Code: text=Google | Child of Quote -> '
-                 'Plain: text=の概要]')
+                ParseResult(content=[
+                    HeadingBlock(size=2, children=[
+                        LinkInline(href='https://www.google.com/', text='Google'),
+                        PlainInline(text='とは')
+                    ]),
+                    QuoteBlock(children=[
+                        CodeInline(text='Google'),
+                        PlainInline(text='の概要')
+                    ])
+                ])
             )
         ]
     )
-    def test_parse_mixed(self, lines: list[str], expected: str):
+    def test_parse_mixed(self, lines: list[str], expected: ParseResult):
         # GIVEN
         sut = MarkdownParser()
         # WHEN
         actual = sut.parse(lines)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
 
     # コードブロックのモードを制御できているか
     @pytest.mark.parametrize(
@@ -112,33 +150,61 @@ class TestMarkdownParser:
         [
             (
                 ['## 概要', '> すてきな概要です'],
-                ('[Heading: size=2 | Child of Heading -> Plain: text=概要] '
-                 '[Quote: | Child of Quote -> Plain: text=すてきな概要です]')
+                ParseResult(content=[
+                    HeadingBlock(size=2, children=[
+                        PlainInline(text='概要')
+                    ]),
+                    QuoteBlock(children=[
+                        PlainInline(text='すてきな概要です')
+                    ])
+                ])
             ),
 
             (
                 ['### サンプルコード', '```Python', '# Pythonのコメント', '```', '#### 上はサンプルコードです'],
-                ('[Heading: size=3 | Child of Heading -> Plain: text=サンプルコード] '
-                 '[CodeBlock: language=Python | Child of CodeBlock -> Plain: text=] '
-                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=# Pythonのコメント] '
-                 '[CodeBlock: language= | Child of CodeBlock -> Plain: text=] '
-                 '[Heading: size=4 | Child of Heading -> Plain: text=上はサンプルコードです]')
+                ParseResult(content=[
+                    HeadingBlock(size=3, children=[
+                        PlainInline(text='サンプルコード')
+                    ]),
+                    CodeBlock(language='Python', children=[
+                        PlainInline(text='')
+                    ]),
+                    PlainBlock(children=[
+                        PlainInline(text='# Pythonのコメント')
+                    ]),
+                    CodeBlock(language='', children=[
+                        PlainInline(text='')
+                    ]),
+                    HeadingBlock(size=4, children=[
+                        PlainInline(text='上はサンプルコードです')
+                    ])
+                ])
             ),
 
             (
                 ['> コードが始まります', '```', '## コードを閉じるのを忘れました', '[まだコードです](url)'],
-                ('[Quote: | Child of Quote -> Plain: text=コードが始まります] '
-                 '[CodeBlock: language= | Child of CodeBlock -> Plain: text=] '
-                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=## コードを閉じるのを忘れました] '
-                 '[Plain: indent_depth=0 | Child of Plain -> Plain: text=[まだコードです](url)]')
+                ParseResult(content=[
+                    QuoteBlock(children=[
+                        PlainInline(text='コードが始まります')
+                    ]),
+                    CodeBlock(language='', children=[
+                        PlainInline(text='')
+                    ]),
+                    PlainBlock(indent_depth=0, children=[
+                        PlainInline(text='## コードを閉じるのを忘れました')
+                    ]),
+                    PlainBlock(indent_depth=0, children=[
+                        PlainInline(text='[まだコードです](url)')
+                    ]),
+                ])
             ),
         ],
         ids=['no code block', 'code block with end symbol', 'no end symbol']
     )
-    def test_parse_code_block_mode(self, lines: list[str], expected: str):
+    def test_parse_code_block_mode(self, lines: list[str], expected: ParseResult):
         # GIVEN
         sut = MarkdownParser()
         # WHEN
         actual = sut.parse(lines)
         # THEN
-        assert repr(actual) == expected
+        assert actual == expected
