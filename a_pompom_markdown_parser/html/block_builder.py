@@ -110,13 +110,15 @@ class HeadingBuilder(IBuilder):
 
     HEADING_EXPRESSION = '{h}'
     CLASSNAME_EXPRESSION = '{classname}'
+    # 目次から参照できるようにIDを加えておく
+    ID_EXPRESSION = '{id}'
     TEXT_EXPRESSION = '{text}'
     # example
-    # <h2 class="...">
+    # <h2 id="..." class="...">
     #     概要
     # </h2>
     TEMPLATE = (
-        f'<{HEADING_EXPRESSION} class="{CLASSNAME_EXPRESSION}">{LINE_BREAK}'
+        f'<{HEADING_EXPRESSION} id="{ID_EXPRESSION}" class="{CLASSNAME_EXPRESSION}">{LINE_BREAK}'
         f'{INDENT}{TEXT_EXPRESSION}{LINE_BREAK}'
         f'</{HEADING_EXPRESSION}>'
     )
@@ -136,6 +138,8 @@ class HeadingBuilder(IBuilder):
         heading_tag = f'h{block.size}'
         heading = self.TEMPLATE.replace(
             self.HEADING_EXPRESSION, heading_tag
+        ).replace(
+            self.ID_EXPRESSION, f'#{child_text}'
         ).replace(
             self.CLASSNAME_EXPRESSION, setting['class_name'].get(heading_tag, '')
         ).replace(
