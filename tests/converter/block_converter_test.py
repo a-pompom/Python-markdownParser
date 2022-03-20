@@ -2,7 +2,7 @@ import pytest
 
 from a_pompom_markdown_parser.converter.converter import group_same_range_blocks
 from a_pompom_markdown_parser.element.block import Block, ParagraphBlock, QuoteBlock, ListBlock, \
-    ListItemBlock, CodeBlock, PlainBlock
+    ListItemBlock, CodeBlock, PlainBlock, ParseResult, HeadingBlock, CodeChildBlock
 from a_pompom_markdown_parser.element.inline import PlainInline
 from a_pompom_markdown_parser.converter.block_converter import BlockConverter, QuoteConverter, ListConverter, \
     CodeBlockConverter
@@ -17,10 +17,17 @@ class TestBlockConverter:
     """
 
     @pytest.mark.parametrize(
-        ('lines', 'expected_list'),
+        ('parse_result', 'expected_list'),
         [
             (
-                ['今日はいい天気です。', '日記を終わります。'],
+                ParseResult(content=[
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='今日はいい天気です。')
+                    ]),
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='日記を終わります。')
+                    ]),
+                ]),
                 [
                     ParagraphBlock(indent_depth=0, children=[
                         PlainInline(text='今日はいい天気です。')
@@ -32,7 +39,14 @@ class TestBlockConverter:
             ),
 
             (
-                ['> いい感じの言葉を', '> 引用します。'],
+                ParseResult(content=[
+                    QuoteBlock(children=[
+                        PlainInline('いい感じの言葉を')
+                    ]),
+                    QuoteBlock(children=[
+                        PlainInline('引用します。')
+                    ]),
+                ]),
                 [
                     QuoteBlock(children=[
                         ParagraphBlock(indent_depth=1, children=[
@@ -46,7 +60,17 @@ class TestBlockConverter:
             ),
 
             (
-                ['* 1st', '* 2nd', '* 3rd'],
+                ParseResult(content=[
+                    ListBlock(indent_depth=0, children=[
+                        PlainInline(text='1st')
+                    ]),
+                    ListBlock(indent_depth=0, children=[
+                        PlainInline(text='2nd')
+                    ]),
+                    ListBlock(indent_depth=0, children=[
+                        PlainInline(text='3rd')
+                    ]),
+                ]),
                 [
                     ListBlock(indent_depth=0, children=[
                         ListItemBlock(indent_depth=1, children=[
@@ -64,12 +88,11 @@ class TestBlockConverter:
         ],
         ids=['plain', 'quote', 'list']
     )
-    def test_convert(self, lines: list[str], expected_list: list[Block]):
+    def test_convert(self, parse_result: ParseResult, expected_list: list[Block]):
         # GIVEN
         sut = BlockConverter()
-        markdown_result = MarkdownParser().parse(lines)
         # WHEN
-        actual_list = sut.convert(markdown_result.content)
+        actual_list = sut.convert(parse_result.content)
         # THEN
         for actual, expected in zip(actual_list, expected_list):
             assert actual == expected
@@ -80,35 +103,67 @@ class TestQuoteConverter:
 
     # Block要素群が変換対象か
     @pytest.mark.parametrize(
-        ('lines', 'expected'),
+        ('parse_result', 'expected'),
         [
-            (['> quote text', '> 引用文です。'], True),
-            (['plain text', 'plain 2nd line text'], False)
+            (
+                ParseResult(content=[
+                    QuoteBlock(children=[
+                        PlainInline(text='これは引用要素です')
+                    ]),
+                    QuoteBlock(children=[
+                        PlainInline(text='これも引用要素です')
+                    ]),
+                ]),
+                True
+            ),
+            (
+                ParseResult(content=[
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='plain text')
+                    ]),
+                    QuoteBlock(children=[
+                        PlainInline(text='これは引用要素です')
+                    ]),
+                ]),
+                False
+            )
         ],
         ids=['target', 'not target']
+
     )
-    def test_is_target(self, lines: list[str], expected: bool):
+    def test_is_target(self, parse_result: ParseResult, expected: bool):
         # GIVEN
-        markdown_result = MarkdownParser().parse(lines)
         sut = QuoteConverter()
         # WHEN
-        actual = sut.is_target(markdown_result.content)
+        actual = sut.is_target(parse_result.content)
         # THEN
         assert actual == expected
 
     @pytest.mark.parametrize(
-        ('lines', 'expected'),
+        ('parse_result', 'expected'),
         [
             (
-                ['> quote text'],
+                ParseResult(content=[
+                    QuoteBlock(children=[
+                        PlainInline(text='quote text')
+                    ]),
+                ]),
                 QuoteBlock(children=[
                     ParagraphBlock(indent_depth=1, children=[
                         PlainInline(text='quote text')
                     ])
                 ])
             ),
+
             (
-                ['> Pythonは', '> プログラミング言語です'],
+                ParseResult(content=[
+                    QuoteBlock(children=[
+                        PlainInline(text='Pythonは')
+                    ]),
+                    QuoteBlock(children=[
+                        PlainInline(text='プログラミング言語です')
+                    ]),
+                ]),
                 QuoteBlock(children=[
                     ParagraphBlock(indent_depth=1, children=[
                         PlainInline(text='Pythonは')
@@ -121,19 +176,18 @@ class TestQuoteConverter:
         ],
         ids=['single', 'multiple']
     )
-    def test_convert(self, lines: list[str], expected: QuoteBlock):
+    def test_convert(self, parse_result: ParseResult, expected: QuoteBlock):
         # GIVEN
         sut = QuoteConverter()
-        markdown_result = MarkdownParser().parse(lines)
 
-        if not sut.is_target(markdown_result.content):
+        if not sut.is_target(parse_result.content):
             assert False
 
         # WHEN
         # 「Python3.10-dev, PyCharm2021.2」の段階ではリストに対する型ガードが
         # 有効にならないようなので、型チェックを無効化
         # noinspection PyTypeChecker
-        actual = sut.convert(markdown_result.content)
+        actual = sut.convert(parse_result.content)
         # THEN
         assert actual == expected
 
@@ -143,28 +197,51 @@ class TestListConverter:
 
     # Block要素群が変換対象か
     @pytest.mark.parametrize(
-        ('lines', 'expected'),
+        ('parse_result', 'expected'),
         [
-            (['* 1st element', '* 2nd element'], True),
-            (['# Heading', 'Paragraph'], False),
+            (
+                ParseResult(content=[
+                    ListBlock(indent_depth=0, children=[
+                        PlainInline(text='1st element')
+                    ]),
+                    ListBlock(indent_depth=0, children=[
+                        PlainInline(text='2nd element')
+                    ]),
+                ]),
+                True
+            ),
+            (
+                ParseResult(content=[
+                    HeadingBlock(size=1, children=[
+                        PlainInline(text='Heading')
+                    ]),
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='Paragraph')
+                    ]),
+                ]),
+                False
+            ),
         ],
         ids=['target', 'not target']
     )
-    def test_is_target(self, lines: list[str], expected: bool):
+    def test_is_target(self, parse_result: ParseResult, expected: bool):
         # GIVEN
         sut = ListConverter()
-        markdown_result = MarkdownParser().parse(lines)
         # WHEN
-        actual = sut.is_target(markdown_result.content)
+        actual = sut.is_target(parse_result.content)
         # THEN
         assert actual == expected
 
     # リスト・リスト子要素へ変換
     @pytest.mark.parametrize(
-        ('lines', 'expected'),
+        ('parse_result', 'expected'),
         [
             (
-                ['- method1'],
+                ParseResult(content=[
+                    ListBlock(indent_depth=0, children=[
+                        PlainInline(text='method1')
+                    ])
+                ]),
                 ListBlock(indent_depth=0, children=[
                     ListItemBlock(indent_depth=1, children=[
                         PlainInline(text='method1')
@@ -172,7 +249,14 @@ class TestListConverter:
                 ])
             ),
             (
-                ['* item1', '* item2'],
+                ParseResult(content=[
+                    ListBlock(children=[
+                        PlainInline(text='item1')
+                    ]),
+                    ListBlock(children=[
+                        PlainInline(text='item2')
+                    ]),
+                ]),
                 ListBlock(indent_depth=0, children=[
                     ListItemBlock(indent_depth=1, children=[
                         PlainInline(text='item1')
@@ -185,18 +269,17 @@ class TestListConverter:
         ],
         ids=['single', 'multiple']
     )
-    def test_convert(self, lines: list[str], expected: ListBlock):
+    def test_convert(self, parse_result: ParseResult, expected: ListBlock):
         sut = ListConverter()
-        markdown_result = MarkdownParser().parse(lines)
 
-        if not sut.is_target(markdown_result.content):
+        if not sut.is_target(parse_result.content):
             assert False
 
         # WHEN
         # 「Python3.10-dev, PyCharm2021.2」の段階ではリストに対する型ガードが
         # 有効にならないようなので、型チェックを無効化
         # noinspection PyTypeChecker
-        actual = sut.convert(markdown_result.content)
+        actual = sut.convert(parse_result.content)
         # THEN
         assert actual == expected
 
@@ -206,61 +289,104 @@ class TestCodeBlockConverter:
 
     # 対象判定-対象
     @pytest.mark.parametrize(
-        ('lines', 'expected'),
+        ('parse_result', 'expected'),
         [
             (
-                [
-                    '```JavaScript',
-                    'const i = 0;',
-                    '// comment',
-                    '```'
-                ],
+                ParseResult(content=[
+                    CodeBlock(language='JavaScript', children=[
+                        PlainInline(text='')
+                    ]),
+                    CodeChildBlock(children=[
+                        PlainInline(text='const i = 0;')
+                    ]),
+                    CodeChildBlock(children=[
+                        PlainInline(text='// comment')
+                    ]),
+                    CodeBlock(language='', children=[
+                        PlainInline(text='')
+                    ]),
+                ]),
                 True
             ),
         ],
     )
-    def test_is_target_code_block(self, lines: list[str], expected: bool):
+    def test_is_target_code_block(self, parse_result: ParseResult, expected: bool):
         # GIVEN
         sut = CodeBlockConverter()
-        blocks = group_same_range_blocks(MarkdownParser().parse(lines).content)
         # WHEN
-        actual = sut.is_target(blocks)
+        actual = sut.is_target(parse_result.content)
         # THEN
         assert actual == expected
 
     # 対象判定-対象外
     @pytest.mark.parametrize(
-        ('lines', 'expected'),
+        ('parse_result', 'expected'),
         [
-            (['## Heading text', 'Plain text'], False),
+            (
+                ParseResult(content=[
+                    HeadingBlock(size=2, children=[
+                        PlainInline(text='Heading text')
+                    ]),
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='Plain text')
+                    ])
+                ]),
+                False
+            ),
         ]
     )
-    def test_is_target_not_code_block(self, lines: list[str], expected: bool):
+    def test_is_target_not_code_block(self, parse_result: ParseResult, expected: bool):
         # GIVEN
         sut = CodeBlockConverter()
-        blocks = MarkdownParser().parse(lines).content
         # WHEN
-        actual = sut.is_target(blocks)
+        actual = sut.is_target(parse_result.content)
         # THEN
         assert actual == expected
 
     # 1つのコードブロックへ統合されるか
     @pytest.mark.parametrize(
-        ('lines', 'expected'),
+        ('parse_result', 'expected'),
         [
             (
-                ['```Python', '# comment', 'instance = Klass()', '```'],
+                ParseResult(content=[
+                    CodeBlock(language='Python', children=[
+                        PlainInline(text='')
+                    ]),
+                    CodeChildBlock(children=[
+                        PlainInline(text='# comment')
+                    ]),
+                    CodeChildBlock(children=[
+                        PlainInline(text='instance = Klass()')
+                    ]),
+                    CodeBlock(language='', children=[
+                        PlainInline(text='')
+                    ]),
+                ]),
                 CodeBlock(language='Python', children=[
                     PlainBlock(indent_depth=0, children=[
                         PlainInline(text='# comment')
                     ]),
                     PlainBlock(indent_depth=0, children=[
                         PlainInline(text='instance = Klass()')
+                    ]),
+                    PlainBlock(indent_depth=0, children=[
+                        PlainInline(text='')
                     ])
                 ])
             ),
+
             (
-                ['```', '## [参考](url)', '> 引用ここまで'],
+                ParseResult(content=[
+                    CodeBlock(language='', children=[
+                        PlainInline(text='')
+                    ]),
+                    CodeChildBlock(children=[
+                        PlainInline(text='## [参考](url)')
+                    ]),
+                    CodeChildBlock(children=[
+                        PlainInline(text='> 引用ここまで')
+                    ]),
+                ]),
                 CodeBlock(language='', children=[
                     PlainBlock(indent_depth=0, children=[
                         PlainInline(text='## [参考](url)')
@@ -271,20 +397,19 @@ class TestCodeBlockConverter:
                 ])
             ),
         ],
-        ids=['code', 'not parsed']
+        ids=['code', 'inline element not parsed']
     )
-    def test_convert(self, lines: list[str], expected: CodeBlock):
+    def test_convert(self, parse_result: ParseResult, expected: CodeBlock):
         # GIVEN
         sut = CodeBlockConverter()
-        blocks = group_same_range_blocks(MarkdownParser().parse(lines).content)
 
-        if not sut.is_target(blocks):
+        if not sut.is_target(parse_result.content):
             assert False
 
         # WHEN
         # 「Python3.10-dev, PyCharm2021.2」の段階ではリストに対する型ガードが
         # 有効にならないようなので、型チェックを無効化
         # noinspection PyTypeChecker
-        actual = sut.convert(blocks)
+        actual = sut.convert(parse_result.content)
         # THEN
         assert actual == expected
