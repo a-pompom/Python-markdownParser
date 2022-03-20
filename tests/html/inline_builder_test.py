@@ -1,7 +1,7 @@
 import pytest
 
+from a_pompom_markdown_parser.element.inline import Inline, PlainInline, LinkInline, CodeInline, ImageInline
 from a_pompom_markdown_parser.html.inline_builder import InlineBuilder, LinkBuilder, CodeBuilder, ImageBuilder
-from a_pompom_markdown_parser.markdown.inline_parser import InlineParser, LinkParser, CodeParser, ImageParser
 from a_pompom_markdown_parser.settings import setting
 
 
@@ -10,30 +10,36 @@ class TestInlineBuilder:
 
     # HTML組み立て
     @pytest.mark.parametrize(
-        ('inline_text', 'expected'),
+        ('inline', 'expected'),
         [
             (
-                'plain text',
+                PlainInline(text='plain text'),
                 'plain text'
             ),
             (
-                '[参考リンク](https://docs.python.org/3/)',
-                f'<a href="https://docs.python.org/3/" class="{setting["class_name"]["a"]}">参考リンク</a>'
+                LinkInline(href='https://docs.python.org/3/', text='参考リンク'),
+                (f'<a'
+                 f' href="https://docs.python.org/3/"'
+                 f' class="{setting["class_name"]["a"]}">'
+                 f'参考リンク'
+                 f'</a>')
             ),
             (
-                '![awesome image](image.png)',
+                ImageInline(src='image.png', alt='awesome image', text=''),
                 '<img src="image.png" alt="awesome image">'
             ),
             (
-                '`DependencyInjection`',
-                f'<code class="{setting["class_name"]["code"]}">DependencyInjection</code>'
+                CodeInline(text='DependencyInjection'),
+                (f'<code'
+                 f' class="{setting["class_name"]["code"]}">'
+                 f'DependencyInjection'
+                 f'</code>')
             ),
         ],
         ids=['plain', 'link', 'image', 'code'])
-    def test_build(self, inline_text: str, expected: str):
+    def test_build(self, inline: Inline, expected: str):
         # GIVEN
         sut = InlineBuilder()
-        inline = InlineParser().parse(inline_text)[0]
         # WHEN
         actual = sut.build(inline)
         # THEN
@@ -45,17 +51,25 @@ class TestLinkBuilder:
 
     # 対象判定
     @pytest.mark.parametrize(
-        ('inline_text', 'expected'),
+        ('inline', 'expected'),
         [
-            ('[this is a link](url)', True),
-            ('plain text', False),
-            ('[参考リンク](https://www.google.com/)', True)
+            (
+                LinkInline(href='url', text='this is a link'),
+                True
+            ),
+            (
+                PlainInline(text='plain text'),
+                False
+            ),
+            (
+                LinkInline(href='https://www.google.com/', text='参考リンク'),
+                True
+            ),
         ],
         ids=['target', 'not target', 'normal link'])
-    def test_target(self, inline_text: str, expected: bool):
+    def test_target(self, inline: Inline, expected: bool):
         # GIVEN
         sut = LinkBuilder()
-        inline = InlineParser().parse(inline_text)[0]
         # WHEN
         actual = sut.is_target(inline)
         # THEN
@@ -63,22 +77,27 @@ class TestLinkBuilder:
 
     # HTML組み立て
     @pytest.mark.parametrize(
-        ('inline_text', 'expected'),
+        ('inline', 'expected'),
         [
             (
-                '[this is a link](url)',
-                f'<a href="url" class="{setting["class_name"]["a"]}">this is a link</a>'
+                LinkInline(href='url', text='this is a link'),
+                (f'<a href="url"'
+                 f' class="{setting["class_name"]["a"]}">'
+                 f'this is a link'
+                 f'</a>')
             ),
             (
-                '[参考リンク](https://www.google.com/)',
-                f'<a href="https://www.google.com/" class="{setting["class_name"]["a"]}">参考リンク</a>'
+                LinkInline(href='https://www.google.com/', text='参考リンク'),
+                (f'<a href="https://www.google.com/"'
+                 f' class="{setting["class_name"]["a"]}">'
+                 f'参考リンク'
+                 f'</a>')
             )
         ],
         ids=['url', 'google'])
-    def test_build(self, inline_text: str, expected: str):
+    def test_build(self, inline: LinkInline, expected: str):
         # GIVEN
         sut = LinkBuilder()
-        inline = LinkParser().parse(inline_text)
 
         # WHEN
         actual = sut.build(inline)
@@ -91,15 +110,20 @@ class TestCodeBuilder:
 
     # 対象判定
     @pytest.mark.parametrize(
-        ('inline_text', 'expected'), [
-            ('`#`', True),
-            ('[this is a link](url)', False),
+        ('inline', 'expected'), [
+            (
+                CodeInline(text='#'),
+                True
+            ),
+            (
+                LinkInline(href='url', text='this is a link'),
+                False
+            )
         ],
         ids=['target', 'not target'])
-    def test_target(self, inline_text: str, expected: bool):
+    def test_target(self, inline: Inline, expected: bool):
         # GIVEN
         sut = CodeBuilder()
-        inline = InlineParser().parse(inline_text)[0]
         # WHEN
         actual = sut.is_target(inline)
         # THEN
@@ -107,21 +131,26 @@ class TestCodeBuilder:
 
     # HTML組み立て
     @pytest.mark.parametrize(
-        ('inline_text', 'expected'), [
+        ('inline', 'expected'), [
             (
-                '`plain text`',
-                f'<code class="{setting["class_name"]["code"]}">plain text</code>'
+                CodeInline(text='plain text'),
+                (f'<code'
+                 f' class="{setting["class_name"]["code"]}">'
+                 f'plain text'
+                 f'</code>')
             ),
             (
-                '`codeタグ`',
-                f'<code class="{setting["class_name"]["code"]}">codeタグ</code>'
+                CodeInline(text='codeタグ'),
+                (f'<code'
+                 f' class="{setting["class_name"]["code"]}">'
+                 f'codeタグ'
+                 f'</code>')
             ),
         ],
         ids=['plain', 'full width'])
-    def test_build(self, inline_text: str, expected: str):
+    def test_build(self, inline: CodeInline, expected: str):
         # GIVEN
         sut = CodeBuilder()
-        inline = CodeParser().parse(inline_text)
         # WHEN
         actual = sut.build(inline)
         # THEN
@@ -133,16 +162,21 @@ class TestImageBuilder:
 
     # 対象判定
     @pytest.mark.parametrize(
-        ('inline_text', 'expected'),
+        ('inline', 'expected'),
         [
-            ('![image](image.png)', True),
-            ('`code text`', False),
+            (
+                ImageInline(src='image.pn', alt='image', text=''),
+                True
+            ),
+            (
+                CodeInline(text='code text'),
+                False
+            )
         ],
         ids=['target', 'not target'])
-    def test_target(self, inline_text: str, expected: bool):
+    def test_target(self, inline: Inline, expected: bool):
         # GIVEN
         sut = ImageBuilder()
-        inline = InlineParser().parse(inline_text)[0]
         # WHEN
         actual = sut.is_target(inline)
         # THEN
@@ -150,22 +184,21 @@ class TestImageBuilder:
 
     # HTML組み立て
     @pytest.mark.parametrize(
-        ('inline_text', 'expected'),
+        ('inline', 'expected'),
         [
             (
-                '![わんこ](images/dog.png)',
+                ImageInline(src='images/dog.png', alt='わんこ', text=''),
                 '<img src="images/dog.png" alt="わんこ">'
             ),
             (
-                '![画像](http://localhost/image.png)',
+                ImageInline(src='http://localhost/image.png', alt='画像', text=''),
                 '<img src="http://localhost/image.png" alt="画像">'
             ),
         ],
         ids=['path_expression', 'url_expression'])
-    def test_build(self, inline_text, expected: str):
+    def test_build(self, inline: ImageInline, expected: str):
         # GIVEN
         sut = ImageBuilder()
-        inline = ImageParser().parse(inline_text)
         # WHEN
         actual = sut.build(inline)
         # THEN
