@@ -4,8 +4,6 @@ from a_pompom_markdown_parser.html.builder import HtmlBuilder
 from a_pompom_markdown_parser.element.block import ParseResult, HeadingBlock, ParagraphBlock, QuoteBlock, ListBlock, \
     ListItemBlock, CodeBlock, PlainBlock
 from a_pompom_markdown_parser.element.inline import PlainInline, LinkInline
-from a_pompom_markdown_parser.markdown.parser import MarkdownParser
-from a_pompom_markdown_parser.converter.converter import Converter
 
 from a_pompom_markdown_parser.settings import setting
 
@@ -40,7 +38,7 @@ class TestHtmlBuilder:
                     ])
                 ]),
                 (
-                    f'<h4 class="{setting["class_name"]["h4"]}">{LINE_BREAK}'
+                    f'<h4 id="課題: 頑張りたい" class="{setting["class_name"]["h4"]}">{LINE_BREAK}'
                     f'{INDENT}課題: 頑張りたい{LINE_BREAK}'
                     f'</h4>{LINE_BREAK}'
                 )
@@ -67,7 +65,7 @@ class TestHtmlBuilder:
                     ])
                 ]),
                 (
-                    f'<h3 class="{setting["class_name"]["h3"]}">{LINE_BREAK}'
+                    f'<h3 id="Pythonとは" class="{setting["class_name"]["h3"]}">{LINE_BREAK}'
                     f'{INDENT}<a href="https://docs.python.org/3/" class="{setting["class_name"]["a"]}">Python</a>とは{LINE_BREAK}'
                     f'</h3>{LINE_BREAK}'
                 )
@@ -158,7 +156,38 @@ class TestHtmlBuilder:
                     f'</ul>{LINE_BREAK}'
                 )
             ),
-        ]
+            (
+                ParseResult(content=[
+                    ListBlock(indent_depth=0, children=[
+                        ListItemBlock(indent_depth=1, children=[
+                            LinkInline(href='#概要', text='概要')
+                        ]),
+                        ListItemBlock(indent_depth=1, children=[
+                            ListBlock(indent_depth=2, children=[
+                                ListItemBlock(indent_depth=3, children=[
+                                    LinkInline(href='#ゴール', text='ゴール')
+                                ])
+                            ])
+                        ])
+                    ]),
+                ]),
+                (
+                    f'<ul class="{setting["class_name"]["ul"]}">{LINE_BREAK}'
+                    f'{INDENT}<li class="{setting["class_name"]["li"]}">{LINE_BREAK}'
+                    f'{INDENT}{INDENT}<a href="#概要" class="{setting["class_name"]["a"]}">概要</a>{LINE_BREAK}'
+                    f'{INDENT}</li>{LINE_BREAK}'
+                    f'{INDENT}<li class="{setting["class_name"]["li_nested"]}">{LINE_BREAK}'
+                    f'{INDENT}{INDENT}<ul class="{setting["class_name"]["ul"]}">{LINE_BREAK}'
+                    f'{INDENT}{INDENT}{INDENT}<li class="{setting["class_name"]["li"]}">{LINE_BREAK}'
+                    f'{INDENT}{INDENT}{INDENT}{INDENT}<a href="#ゴール" class="{setting["class_name"]["a"]}">ゴール</a>{LINE_BREAK}'
+                    f'{INDENT}{INDENT}{INDENT}</li>{LINE_BREAK}'
+                    f'{INDENT}{INDENT}</ul>{LINE_BREAK}'
+                    f'{INDENT}</li>{LINE_BREAK}'
+                    f'</ul>{LINE_BREAK}'
+                )
+            )
+        ],
+        ids=['single', 'nested']
     )
     def test_build_list(self, parse_result: ParseResult, expected: str):
         sut = HtmlBuilder()
