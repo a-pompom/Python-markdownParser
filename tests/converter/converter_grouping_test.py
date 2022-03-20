@@ -1,9 +1,9 @@
 import pytest
 
 from a_pompom_markdown_parser.converter.converter import group_same_range_blocks
-from a_pompom_markdown_parser.element.block import Block, CodeBlock, CodeChildBlock, ParagraphBlock, HeadingBlock
+from a_pompom_markdown_parser.element.block import Block, CodeBlock, CodeChildBlock, ParagraphBlock, HeadingBlock, \
+    ParseResult, PlainBlock
 from a_pompom_markdown_parser.element.inline import PlainInline
-from a_pompom_markdown_parser.markdown.parser import MarkdownParser
 
 
 class TestGrouping:
@@ -11,10 +11,23 @@ class TestGrouping:
 
     # CodeBlockの範囲内では当該メソッドによりCodeBlockへグループ化されるか
     @pytest.mark.parametrize(
-        ('lines', 'expected_list'),
+        ('parse_result', 'expected_list'),
         [
             (
-                ['```JavaScript', 'const i = 0;', '```', 'plain text'],
+                ParseResult(content=[
+                    CodeBlock(language='JavaScript', children=[
+                        PlainInline(text='')
+                    ]),
+                    PlainBlock(indent_depth=0, children=[
+                        PlainInline(text='const i = 0;')
+                    ]),
+                    CodeBlock(language='', children=[
+                        PlainInline(text='')
+                    ]),
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='plain text')
+                    ])
+                ]),
                 [
                     CodeBlock(language='JavaScript', children=[
                         PlainInline(text='')
@@ -28,7 +41,20 @@ class TestGrouping:
                 ]
             ),
             (
-                ['# heading', '```', 'sort();', '```'],
+                ParseResult(content=[
+                    HeadingBlock(size=1, children=[
+                        PlainInline(text='heading')
+                    ]),
+                    CodeBlock(language='', children=[
+                        PlainInline(text='')
+                    ]),
+                    PlainBlock(indent_depth=0, children=[
+                        PlainInline(text='sort();')
+                    ]),
+                    CodeBlock(language='', children=[
+                        PlainInline(text='')
+                    ]),
+                ]),
                 [
                     HeadingBlock(size=1, children=[
                         PlainInline(text='heading')
@@ -39,11 +65,23 @@ class TestGrouping:
                     CodeChildBlock(children=[
                         PlainInline(text='sort();')
                     ])
-
                 ]
             ),
             (
-                ['本文', '```python', 'for (int i=0; i < 10; i++)', '```'],
+                ParseResult(content=[
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='本文')
+                    ]),
+                    CodeBlock(language='python', children=[
+                        PlainInline(text='')
+                    ]),
+                    PlainBlock(indent_depth=0, children=[
+                        PlainInline(text='for (int i=0; i < 10; i++)')
+                    ]),
+                    CodeBlock(language='', children=[
+                        PlainInline(text='')
+                    ]),
+                ]),
                 [
                     ParagraphBlock(indent_depth=0, children=[
                         PlainInline(text='本文')
@@ -57,7 +95,17 @@ class TestGrouping:
                 ]
             ),
             (
-                ['コードの例を示します。', '```', '> 入れ忘れました'],
+                ParseResult(content=[
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='コードの例を示します。')
+                    ]),
+                    CodeBlock(language='', children=[
+                        PlainInline(text='')
+                    ]),
+                    PlainBlock(indent_depth=0, children=[
+                        PlainInline(text='> 入れ忘れました')
+                    ]),
+                ]),
                 [
                     ParagraphBlock(indent_depth=0, children=[
                         PlainInline(text='コードの例を示します。')
@@ -73,12 +121,11 @@ class TestGrouping:
         ],
         ids=['head', 'between', 'tail', 'no end']
     )
-    def test_code_block(self, lines: list[str], expected_list: list[Block]):
+    def test_code_block(self, parse_result: ParseResult, expected_list: list[Block]):
         # GIVEN
         sut = group_same_range_blocks
-        blocks = MarkdownParser().parse(lines).content
         # WHEN
-        actual_blocks = sut(blocks)
+        actual_blocks = sut(parse_result.content)
 
         # THEN
         for actual, expected in zip(actual_blocks, expected_list):
@@ -86,10 +133,17 @@ class TestGrouping:
 
     # グループ化対象外のものはそのまま出力されるか
     @pytest.mark.parametrize(
-        ('lines', 'expected_list'),
+        ('parse_result', 'expected_list'),
         [
             (
-                ['plain text', '# heading'],
+                ParseResult(content=[
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='plain text')
+                    ]),
+                    HeadingBlock(size=1, children=[
+                        PlainInline(text='heading')
+                    ]),
+                ]),
                 [
                     ParagraphBlock(indent_depth=0, children=[
                         PlainInline(text='plain text')
@@ -101,12 +155,11 @@ class TestGrouping:
             )
         ]
     )
-    def test_not_grouping(self, lines: list[str], expected_list: list[Block]):
+    def test_not_grouping(self, parse_result: ParseResult, expected_list: list[Block]):
         # GIVEN
         sut = group_same_range_blocks
-        blocks = MarkdownParser().parse(lines).content
         # WHEN
-        actual_blocks = sut(blocks)
+        actual_blocks = sut(parse_result.content)
 
         # THEN
         for actual, expected in zip(actual_blocks, expected_list):

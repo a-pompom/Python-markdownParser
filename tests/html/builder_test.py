@@ -1,7 +1,9 @@
 import pytest
 
 from a_pompom_markdown_parser.html.builder import HtmlBuilder
-from a_pompom_markdown_parser.element.block import ParseResult
+from a_pompom_markdown_parser.element.block import ParseResult, HeadingBlock, ParagraphBlock, QuoteBlock, ListBlock, \
+    ListItemBlock, CodeBlock, PlainBlock
+from a_pompom_markdown_parser.element.inline import PlainInline, LinkInline
 from a_pompom_markdown_parser.markdown.parser import MarkdownParser
 from a_pompom_markdown_parser.converter.converter import Converter
 
@@ -19,7 +21,11 @@ class TestHtmlBuilder:
         ('parse_result', 'expected'),
         [
             (
-                MarkdownParser().parse(['plain text']),
+                ParseResult(content=[
+                    ParagraphBlock(indent_depth=0, children=[
+                        PlainInline(text='plain text')
+                    ])
+                ]),
                 (
                     f'<p class="{setting["class_name"]["p"]}">{LINE_BREAK}'
                     f'{INDENT}plain text{LINE_BREAK}'
@@ -28,7 +34,11 @@ class TestHtmlBuilder:
             ),
 
             (
-                MarkdownParser().parse(['#### 課題: 頑張りたい']),
+                ParseResult(content=[
+                    HeadingBlock(size=4, children=[
+                        PlainInline(text='課題: 頑張りたい')
+                    ])
+                ]),
                 (
                     f'<h4 class="{setting["class_name"]["h4"]}">{LINE_BREAK}'
                     f'{INDENT}課題: 頑張りたい{LINE_BREAK}'
@@ -37,7 +47,11 @@ class TestHtmlBuilder:
             ),
 
             (
-                MarkdownParser().parse(['[参考](https://www.google.com/)']),
+                ParseResult(content=[
+                    ParagraphBlock(indent_depth=0, children=[
+                        LinkInline(href='https://www.google.com/', text='参考')
+                    ])
+                ]),
                 (
                     f'<p class="{setting["class_name"]["p"]}">{LINE_BREAK}'
                     f'{INDENT}<a href="https://www.google.com/" class="{setting["class_name"]["a"]}">参考</a>{LINE_BREAK}'
@@ -46,7 +60,12 @@ class TestHtmlBuilder:
             ),
 
             (
-                MarkdownParser().parse(['### [Python](https://docs.python.org/3/)とは']),
+                ParseResult(content=[
+                    HeadingBlock(size=3, children=[
+                        LinkInline(href='https://docs.python.org/3/', text='Python'),
+                        PlainInline(text='とは')
+                    ])
+                ]),
                 (
                     f'<h3 class="{setting["class_name"]["h3"]}">{LINE_BREAK}'
                     f'{INDENT}<a href="https://docs.python.org/3/" class="{setting["class_name"]["a"]}">Python</a>とは{LINE_BREAK}'
@@ -65,10 +84,22 @@ class TestHtmlBuilder:
 
     # 引用要素の組み立て
     @pytest.mark.parametrize(
-        ('lines', 'expected'),
+        ('parse_result', 'expected'),
         [
             (
-                ['> 私は昨日こう言いました', '> 帰りたいなぁ', '> 引用終わり'],
+                ParseResult(content=[
+                    QuoteBlock(children=[
+                        ParagraphBlock(indent_depth=1, children=[
+                            PlainInline(text='私は昨日こう言いました')
+                        ]),
+                        ParagraphBlock(indent_depth=1, children=[
+                            PlainInline(text='帰りたいなぁ')
+                        ]),
+                        ParagraphBlock(indent_depth=1, children=[
+                            PlainInline(text='引用終わり')
+                        ]),
+                    ])
+                ]),
                 (
                     f'<blockquote class="{setting["class_name"]["blockquote"]}">{LINE_BREAK}'
                     f'{INDENT}<p class="{setting["class_name"]["p"]}">{LINE_BREAK}'
@@ -88,9 +119,8 @@ class TestHtmlBuilder:
             )
         ]
     )
-    def test_build_quote(self, lines: list[str], expected: str):
+    def test_build_quote(self, parse_result: ParseResult, expected: str):
         sut = HtmlBuilder()
-        parse_result = Converter().convert(MarkdownParser().parse(lines))
         # WHEN
         actual = sut.build(parse_result)
         # THEN
@@ -98,10 +128,22 @@ class TestHtmlBuilder:
 
     # リストの組み立て
     @pytest.mark.parametrize(
-        ('lines', 'expected'),
+        ('parse_result', 'expected'),
         [
             (
-                ['* task 1', '* task 2', '* task 3'],
+                ParseResult(content=[
+                    ListBlock(indent_depth=0, children=[
+                        ListItemBlock(indent_depth=1, children=[
+                            PlainInline(text='task 1')
+                        ]),
+                        ListItemBlock(indent_depth=1, children=[
+                            PlainInline(text='task 2')
+                        ]),
+                        ListItemBlock(indent_depth=1, children=[
+                            PlainInline(text='task 3')
+                        ]),
+                    ])
+                ]),
                 (
                     f'<ul class="{setting["class_name"]["ul"]}">{LINE_BREAK}'
                     f'{INDENT}<li class="{setting["class_name"]["li"]}">{LINE_BREAK}'
@@ -115,12 +157,11 @@ class TestHtmlBuilder:
                     f'{INDENT}</li>{LINE_BREAK}'
                     f'</ul>{LINE_BREAK}'
                 )
-            )
+            ),
         ]
     )
-    def test_build_list(self, lines: list[str], expected: str):
+    def test_build_list(self, parse_result: ParseResult, expected: str):
         sut = HtmlBuilder()
-        parse_result = Converter().convert(MarkdownParser().parse(lines))
         # WHEN
         actual = sut.build(parse_result)
         # THEN
@@ -128,31 +169,50 @@ class TestHtmlBuilder:
 
     # コードブロックの組み立て
     @pytest.mark.parametrize(
-        ('lines', 'expected'),
+        ('parse_result', 'expected'),
         [
-            (['```', '# コメントしておきます。', 'const i = 0;', '```'],
-             (f'<pre>{LINE_BREAK}'
-              f'{INDENT}<code class="language- hljs">{LINE_BREAK}'
-              f'# コメントしておきます。{LINE_BREAK}'
-              f'const i = 0;{LINE_BREAK}'
-              f'{INDENT}</code>{LINE_BREAK}'
-              f'</pre>{LINE_BREAK}')),
+            (
+                ParseResult(content=[
+                    CodeBlock(language='', children=[
+                        PlainBlock(indent_depth=0, children=[
+                            PlainInline(text='# コメントしておきます。')
+                        ]),
+                        PlainBlock(indent_depth=0, children=[
+                            PlainInline(text='const i = 0;')
+                        ]),
+                    ])
+                ]),
+                (f'<pre>{LINE_BREAK}'
+                 f'{INDENT}<code class="language- hljs">{LINE_BREAK}'
+                 f'# コメントしておきます。{LINE_BREAK}'
+                 f'const i = 0;{LINE_BREAK}'
+                 f'{INDENT}</code>{LINE_BREAK}'
+                 f'</pre>{LINE_BREAK}')
+            ),
 
-            (['```JavaScript', 'someFunction()', '> コードは終わっているはず。'],
-             (f'<pre>{LINE_BREAK}'
-              f'{INDENT}<code class="language-javascript hljs">{LINE_BREAK}'
-              f'someFunction(){LINE_BREAK}'
-              f'> コードは終わっているはず。{LINE_BREAK}'
-              f'{INDENT}</code>{LINE_BREAK}'
-              f'</pre>{LINE_BREAK}'))
-
-            ,
+            (
+                ParseResult(content=[
+                    CodeBlock(language='JavaScript', children=[
+                        PlainBlock(indent_depth=0, children=[
+                            PlainInline(text='someFunction()')
+                        ]),
+                        PlainBlock(indent_depth=0, children=[
+                            PlainInline(text='> コードは終わっているはず。')
+                        ]),
+                    ])
+                ]),
+                (f'<pre>{LINE_BREAK}'
+                 f'{INDENT}<code class="language-javascript hljs">{LINE_BREAK}'
+                 f'someFunction(){LINE_BREAK}'
+                 f'> コードは終わっているはず。{LINE_BREAK}'
+                 f'{INDENT}</code>{LINE_BREAK}'
+                 f'</pre>{LINE_BREAK}')
+            ),
         ],
         ids=['has end', 'no end']
     )
-    def test_build_code_list(self, lines: list[str], expected: str):
+    def test_build_code_list(self, parse_result: ParseResult, expected: str):
         sut = HtmlBuilder()
-        parse_result = Converter().convert(MarkdownParser().parse(lines))
         # WHEN
         actual = sut.build(parse_result)
         # THEN
