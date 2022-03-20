@@ -5,9 +5,9 @@ setting = {
 
     # スタイルのクラス名
     'class_name': {
-        'h1': 'mt-8 mb-8 text-4xl font-sans font-bold border-solid border-indigo-400 border-b-2 pb-1.5',
-        'h2': 'pb-1 mt-4 mb-4 font-sans text-2xl font-semibold border-b-2 border-indigo-400 border-solid',
-        'h3': 'mt-4 mb-4 font-sans text-xl font-semibold',
+        'h1': 'mt-10 mb-10 text-4xl font-sans font-bold border-solid border-indigo-400 border-b-2 pb-1.5',
+        'h2': 'pb-1 mt-8 mb-8 font-sans text-2xl font-semibold border-b-2 border-indigo-400 border-solid',
+        'h3': 'mt-6 mb-6 font-sans text-xl font-semibold',
         'h4': 'mt-4 mb-4 text-lg',
         'p': 'mt-2 mb-2',
 
