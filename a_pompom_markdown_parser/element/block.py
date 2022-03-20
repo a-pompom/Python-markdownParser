@@ -223,3 +223,15 @@ class HorizontalRuleBlock(Block):
 
     def __eq__(self, other: 'HorizontalRuleBlock'):
         return is_same_children(self.children, other.children)
+
+
+@dataclasses.dataclass
+class TableOfContentsBlock(Block):
+    """ 目次要素と対応する要素を保持 マークダウンでは、[toc]のような表現と対応させる """
+
+    def __repr__(self):
+        child_repr_text = create_repr_children('TableOfContents', self.children)
+        return f'[TableOfContents:{child_repr_text}]'
+
+    def __eq__(self, other: 'TableOfContentsBlock'):
+        return is_same_children(self.children, other.children)

@@ -13,6 +13,8 @@ setting = {
 
         'ul': 'mt-4 ml-8 list-disc',
         'li': 'mt-2',
+        # ネストしているときliへ適用したいスタイル
+        'li_nested': 'mt-2 list-none',
         'blockquote': 'pl-4 border-l-2 border-gray-400 border-solid text-slate-400',
         'hr': 'border-b-2 border-indigo-400',
 

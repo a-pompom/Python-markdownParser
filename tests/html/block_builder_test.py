@@ -36,7 +36,7 @@ class TestBlockBuilder:
                 ]),
                 '概要',
                 (
-                    f'<h1 class="{setting["class_name"]["h1"]}">{LINE_BREAK}'
+                    f'<h1 id="概要" class="{setting["class_name"]["h1"]}">{LINE_BREAK}'
                     f'{INDENT}概要{LINE_BREAK}'
                     f'</h1>'
                 )
@@ -105,7 +105,7 @@ class TestHeadingBuilder:
                 ]),
                 'first heading',
                 (
-                    f'<h1 class="{setting["class_name"]["h1"]}">{LINE_BREAK}'
+                    f'<h1 id="first heading" class="{setting["class_name"]["h1"]}">{LINE_BREAK}'
                     f'{INDENT}first heading{LINE_BREAK}'
                     f'</h1>'
                 )
@@ -116,7 +116,7 @@ class TestHeadingBuilder:
                 ]),
                 '補足: これは補足です',
                 (
-                    f'<h4 class="{setting["class_name"]["h4"]}">{LINE_BREAK}'
+                    f'<h4 id="補足: これは補足です" class="{setting["class_name"]["h4"]}">{LINE_BREAK}'
                     f'{INDENT}補足: これは補足です{LINE_BREAK}'
                     f'</h4>'
                 )

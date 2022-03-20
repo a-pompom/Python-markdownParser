@@ -1,13 +1,11 @@
 import pytest
 
 from a_pompom_markdown_parser.element.block import Block, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, \
-    CodeBlock, \
-    HorizontalRuleBlock
+    CodeBlock, HorizontalRuleBlock, TableOfContentsBlock
 from a_pompom_markdown_parser.element.inline import PlainInline, LinkInline
 from a_pompom_markdown_parser.markdown.inline_parser import InlineParser
 from a_pompom_markdown_parser.markdown.block_parser import BlockParser, HeadingParser, QuoteParser, ListParser, \
-    CodeBlockParser, \
-    HorizontalRuleParser
+    CodeBlockParser, HorizontalRuleParser, TableOfContentsParser
 
 
 class TestBlockParser:
@@ -406,6 +404,64 @@ class TestHorizontalRule:
     def test_parse(self, text: str, expected: HorizontalRuleBlock):
         # GIVEN
         sut = HorizontalRuleParser()
+        children = InlineParser().parse(sut.extract_text(text))
+        # WHEN
+        actual = sut.parse(text, children)
+        # THEN
+        assert actual == expected
+
+
+class TestTableOfContents:
+    """ [toc] で表現される目次要素を検証 """
+
+    # 記法が対象か
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            ('[toc]', True),
+            ('toc', False),
+        ],
+        ids=['toc', 'not toc'])
+    def test_target(self, text: str, expected: bool):
+        # GIVEN
+        sut = TableOfContentsParser()
+        # WHEN
+        actual = sut.is_target(text)
+        # THEN
+        assert actual == expected
+
+    # 記法に基づいて分離
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            (
+                '[toc]',
+                ''
+            ),
+        ])
+    def test_extract(self, text: str, expected: str):
+        # GIVEN
+        sut = TableOfContentsParser()
+        # WHEN
+        actual = sut.extract_text(text)
+        # THEN
+        assert actual == expected
+
+    # 記法を解釈できるか
+    @pytest.mark.parametrize(
+        ('text', 'expected'),
+        [
+            (
+                '[toc]',
+                TableOfContentsBlock(children=[
+                    PlainInline(text='')
+                ])
+            )
+        ]
+    )
+    def test_parse(self, text: str, expected: TableOfContentsBlock):
+        # GIVEN
+        sut = TableOfContentsParser()
         children = InlineParser().parse(sut.extract_text(text))
         # WHEN
         actual = sut.parse(text, children)

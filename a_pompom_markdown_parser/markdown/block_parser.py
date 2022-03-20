@@ -1,6 +1,7 @@
 from a_pompom_markdown_parser.regex import regex
-from a_pompom_markdown_parser.element.block import Children, Block, PlainBlock, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, \
-    CodeBlock, HorizontalRuleBlock
+from a_pompom_markdown_parser.element.block import Children, Block, PlainBlock, ParagraphBlock, HeadingBlock, \
+    QuoteBlock, ListBlock, \
+    CodeBlock, HorizontalRuleBlock, TableOfContentsBlock
 
 # 正規表現のグループのうち、Blockの記法に属さない箇所のインデックス
 # Inlineを解釈する処理をBlockとは独立させるために利用
@@ -38,7 +39,7 @@ class BlockParser:
 
     def __init__(self):
         self.parsers: list[IParser] = [HeadingParser(), QuoteParser(), ListParser(), CodeBlockParser(),
-                                       HorizontalRuleParser()]
+                                       HorizontalRuleParser(), TableOfContentsParser()]
 
     def extract_inline_text(self, markdown_text: str) -> str:
         """
@@ -190,7 +191,7 @@ class CodeBlockParser(IParser):
         :return: コードブロックを表すBlock要素
         """
         language = regex.extract_from_group(self.PATTERN, markdown_text, [2])
-       
+
         return CodeBlock(language=language, children=children)
 
 
@@ -218,6 +219,32 @@ class HorizontalRuleParser(IParser):
         """
 
         return HorizontalRuleBlock(children)
+
+
+class TableOfContentsParser(IParser):
+    """ 目次要素の解釈を責務に持つ """
+
+    # ex) [toc]
+    PATTERN = r'\[toc\]'
+    EXTRACT_PATTERN = r'\[toc\]'
+
+    def is_target(self, markdown_text: str) -> bool:
+        return regex.contain(self.EXTRACT_PATTERN, markdown_text)
+
+    def extract_text(self, markdown_text: str) -> str:
+        # 目次要素はInline要素へ文字列を渡す必要がないため、空文字を返却
+        return ''
+
+    def parse(self, markdown_text: str, children: Children) -> TableOfContentsBlock:
+        """
+        目次を表すBlock要素を生成
+
+        :param markdown_text: 処理対象行
+        :param children: Inlineパーサによって解釈された要素の集まり
+        :return: 目次を表すBlock要素
+        """
+
+        return TableOfContentsBlock(children)
 
 
 # 特殊な要件によるBlockの生成
