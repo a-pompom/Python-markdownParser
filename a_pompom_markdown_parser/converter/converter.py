@@ -1,7 +1,8 @@
 from typing import Generator, Literal
 
-from a_pompom_markdown_parser.element.block import Block, ParseResult, CodeBlock, CodeChildBlock
+from a_pompom_markdown_parser.element.block import Block, ParseResult, CodeBlock, CodeChildBlock, TableOfContentsBlock
 from a_pompom_markdown_parser.converter.block_converter import BlockConverter
+from a_pompom_markdown_parser.converter.toc_converter import TocConverter
 
 
 class Converter:
@@ -26,6 +27,11 @@ class Converter:
         # 変換結果を同種のBlock単位へ分割してから変換
         # こうすることで、コンバータはただ入力を統合したものを出力するだけでよい
         for convert_target in split_to_convert_target(grouped_markdown_result):
+            # 目次
+            if len(convert_target) == 1 and isinstance(convert_target[0], TableOfContentsBlock):
+                convert_result_content += TocConverter().convert(markdown_result)
+                continue
+
             convert_result_content += self._block_converter.convert(convert_target)
 
         return ParseResult(content=convert_result_content)
