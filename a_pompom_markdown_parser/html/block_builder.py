@@ -1,6 +1,8 @@
-from a_pompom_markdown_parser.element.block import Block, PlainBlock, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, ListItemBlock, \
+from a_pompom_markdown_parser.element.block import Block, PlainBlock, ParagraphBlock, HeadingBlock, QuoteBlock, \
+    ListBlock, ListItemBlock, \
     CodeBlock, HorizontalRuleBlock
 
+from a_pompom_markdown_parser.block_utility import get_text_from_block
 from a_pompom_markdown_parser.settings import setting
 
 # 全体で参照する設定値
@@ -139,7 +141,7 @@ class HeadingBuilder(IBuilder):
         heading = self.TEMPLATE.replace(
             self.HEADING_EXPRESSION, heading_tag
         ).replace(
-            self.ID_EXPRESSION, f'#{child_text}'
+            self.ID_EXPRESSION, f'{get_text_from_block(block)}'
         ).replace(
             self.CLASSNAME_EXPRESSION, setting['class_name'].get(heading_tag, '')
         ).replace(
@@ -189,8 +191,9 @@ class QuoteBuilder(IBuilder):
 class ListBuilder(IBuilder):
     """ ul(リスト)タグの組み立てを責務に持つ """
 
-    TEXT_EXPRESSION = '{text}'
+    INDENT_EXPRESSION = '{indent}'
     CLASSNAME_EXPRESSION = '{classname}'
+    TEXT_EXPRESSION = '{text}'
     # 子の改行/インデントはListItemBuilderが責務を持つ
     # example
     # <ul class="...">
@@ -199,9 +202,9 @@ class ListBuilder(IBuilder):
     #     </li>
     # </ul>
     TEMPLATE = (
-        f'<ul class="{CLASSNAME_EXPRESSION}">{LINE_BREAK}'
+        f'{INDENT_EXPRESSION}<ul class="{CLASSNAME_EXPRESSION}">{LINE_BREAK}'
         f'{TEXT_EXPRESSION}'
-        f'</ul>'
+        f'{INDENT_EXPRESSION}</ul>'
     )
 
     def is_target(self, block: Block) -> bool:
@@ -220,6 +223,8 @@ class ListBuilder(IBuilder):
         unordered_list = self.TEMPLATE.replace(
             self.CLASSNAME_EXPRESSION, setting['class_name']['ul']
         ).replace(
+            self.INDENT_EXPRESSION, get_indent_text_from_depth(block.indent_depth)
+        ).replace(
             self.TEXT_EXPRESSION, child_text
         )
 
@@ -230,6 +235,7 @@ class ListItemBuilder(IBuilder):
     """ li(リスト子要素)タグの組み立てを責務に持つ """
 
     INDENT_EXPRESSION = '{indent}'
+    CHILD_INDENT_EXPRESSION = '{child_indent}'
     CLASSNAME_EXPRESSION = '{classname}'
     TEXT_EXPRESSION = '{text}'
     # example
@@ -239,6 +245,13 @@ class ListItemBuilder(IBuilder):
     TEMPLATE = (
         f'{INDENT_EXPRESSION}<li class="{CLASSNAME_EXPRESSION}">{LINE_BREAK}'
         f'{INDENT_EXPRESSION}{INDENT}{TEXT_EXPRESSION}{LINE_BREAK}'
+        f'{INDENT_EXPRESSION}</li>'
+    )
+    # ネストしたリスト要素のインデント・改行は子要素へ委譲させた方がシンプルになるので、
+    # 親ではインデントや改行を持たない
+    TEMPLATE_NESTED = (
+        f'{INDENT_EXPRESSION}<li class="{CLASSNAME_EXPRESSION}">{LINE_BREAK}'
+        f'{TEXT_EXPRESSION}'
         f'{INDENT_EXPRESSION}</li>'
     )
 
@@ -254,10 +267,14 @@ class ListItemBuilder(IBuilder):
         :return: HTMLのliタグを含む文字列
         """
 
-        list_item = self.TEMPLATE.replace(
+        # li -> ulのようにリストがネストしているか
+        is_nested = any(isinstance(child, ListBlock) for child in block.children)
+        template = self.TEMPLATE_NESTED if is_nested else self.TEMPLATE
+
+        list_item = template.replace(
             self.INDENT_EXPRESSION, get_indent_text_from_depth(block.indent_depth)
         ).replace(
-            self.CLASSNAME_EXPRESSION, setting['class_name']['li']
+            self.CLASSNAME_EXPRESSION, setting['class_name']['li_nested'] if is_nested else setting['class_name']['li']
         ).replace(
             self.TEXT_EXPRESSION, child_text
         )

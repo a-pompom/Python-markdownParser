@@ -39,7 +39,7 @@ class BlockParser:
 
     def __init__(self):
         self.parsers: list[IParser] = [HeadingParser(), QuoteParser(), ListParser(), CodeBlockParser(),
-                                       HorizontalRuleParser()]
+                                       HorizontalRuleParser(), TableOfContentsParser()]
 
     def extract_inline_text(self, markdown_text: str) -> str:
         """
