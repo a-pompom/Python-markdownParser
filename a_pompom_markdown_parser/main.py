@@ -56,6 +56,22 @@ def parse_md_to_html(in_file_path: str, out_file_path: str):
         fw.write(html_builder.build(html_input))
 
 
+def parse_md_to_html_by_string(markdown_content: str) -> str:
+    """
+    文字列を入出力とし、マークダウン文字列をHTML文字列へパース
+
+    :param markdown_content: マークダウン形式の文字列
+    :return: HTML形式の文字列
+    """
+    markdown_parser = MarkdownParser()
+    markdown_parse_result = markdown_parser.parse(markdown_content.splitlines())
+
+    converter = Converter()
+    html_input = converter.convert(markdown_parse_result)
+
+    return HtmlBuilder().build(html_input)
+
+
 def execute():
     """
     マークダウン文字列をHTMLへ変換
