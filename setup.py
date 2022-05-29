@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="a_pompom_markdown_parser",
-    version="1.0.0",
+    version="1.1.2",
     author="a-pompom",
     author_email="",
     description="",
