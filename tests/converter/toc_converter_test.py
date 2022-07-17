@@ -1,6 +1,7 @@
 import pytest
 
-from a_pompom_markdown_parser.element.block import HeadingBlock, ListBlock, ListItemBlock, ParseResult, ParagraphBlock
+from a_pompom_markdown_parser.element.block import HeadingBlock, ListBlock, ListItemBlock, ParseResult, ParagraphBlock, \
+    TableOfContentsBlock, Block
 from a_pompom_markdown_parser.element.inline import LinkInline, PlainInline
 from a_pompom_markdown_parser.converter.toc_converter import TocNodeTreeGenerator, TocNode, TocGenerator, TocConverter
 from a_pompom_markdown_parser.markdown.parser import MarkdownParser
@@ -309,6 +310,24 @@ class TestTocGenerator:
 
 class TestTocConverter:
     """ マークダウンのパース結果から目次を表現するul/li Block要素を組み立てられるか検証 """
+
+    # 処理対象か
+    @pytest.mark.parametrize(
+        ('blocks', 'expected'),
+        [
+            ([TableOfContentsBlock(children=[])], True),
+            ([
+                HeadingBlock(size=1, children=[PlainInline(text='Heading')])
+            ], False),
+        ]
+    )
+    def test_is_target(self, blocks: list[Block], expected: bool):
+        # GIVEN
+        sut = TocConverter()
+        # WHEN
+        actual = sut.is_target(blocks)
+        # THEN
+        assert actual == expected
 
     # マークダウンのパース結果を目次へ変換できるか
     @pytest.mark.parametrize(
