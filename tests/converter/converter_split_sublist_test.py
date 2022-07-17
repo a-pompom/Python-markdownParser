@@ -1,7 +1,8 @@
 import pytest
 
 from a_pompom_markdown_parser.converter.converter import split_to_convert_target
-from a_pompom_markdown_parser.element.block import Block, ParagraphBlock, QuoteBlock, HeadingBlock, ParseResult
+from a_pompom_markdown_parser.element.block import Block, ParagraphBlock, QuoteBlock, CodeBlock, CodeChildBlock, \
+    HeadingBlock, ParseResult
 from a_pompom_markdown_parser.element.inline import PlainInline
 
 
@@ -58,8 +59,24 @@ class TestSplitToConvertTarget:
                     ]
                 ]
             ),
+            (
+                ParseResult(content=[
+                    CodeBlock(language='Python', children=[]),
+                    CodeChildBlock(children=[
+                        PlainInline(text='# TODO')
+                    ])
+                ]),
+                [
+                    [
+                        CodeBlock(language='Python', children=[]),
+                        CodeChildBlock(children=[
+                            PlainInline(text='# TODO')
+                        ])
+                    ]
+                ]
+            ),
         ],
-        ids=['only plain', 'only block quote']
+        ids=['only plain', 'only block quote', 'code block']
     )
     def test_only_single_type_block(self, parse_result: ParseResult, expected_list_of_list: list[list[Block]]):
         # GIVEN
