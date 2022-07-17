@@ -212,7 +212,7 @@ class TestHtmlBuilder:
                     ])
                 ]),
                 (f'<pre>{LINE_BREAK}'
-                 f'{INDENT}<code class="language- hljs">{LINE_BREAK}'
+                 f'{INDENT}<code class="language- hljs">'
                  f'# コメントしておきます。{LINE_BREAK}'
                  f'const i = 0;{LINE_BREAK}'
                  f'{INDENT}</code>{LINE_BREAK}'
@@ -231,7 +231,7 @@ class TestHtmlBuilder:
                     ])
                 ]),
                 (f'<pre>{LINE_BREAK}'
-                 f'{INDENT}<code class="language-javascript hljs">{LINE_BREAK}'
+                 f'{INDENT}<code class="language-javascript hljs">'
                  f'someFunction(){LINE_BREAK}'
                  f'> コードは終わっているはず。{LINE_BREAK}'
                  f'{INDENT}</code>{LINE_BREAK}'

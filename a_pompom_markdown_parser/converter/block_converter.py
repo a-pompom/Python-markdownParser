@@ -1,5 +1,6 @@
-from typing import TypeGuard
-from a_pompom_markdown_parser.element.block import Block, PlainBlock, ParagraphBlock, QuoteBlock, ListBlock, ListItemBlock, ICodeBlock, \
+from typing import TypeGuard, cast
+from a_pompom_markdown_parser.element.block import Block, PlainBlock, ParagraphBlock, QuoteBlock, ListBlock, \
+    ListItemBlock, ICodeBlock, \
     CodeBlock
 
 
@@ -94,27 +95,11 @@ class CodeBlockConverter(IConverter):
         :return: 1つのBlockで統合したCodeBlock要素
         """
 
-        language = self._get_code_language_from_header(blocks[0])
+        # 先頭は「```Python」のようなコードブロック
+        code_block: CodeBlock = cast(CodeBlock, blocks[0])
         # コードブロックはpre, codeタグの中でひとまとめに記述するため、統合
         children = [PlainBlock(indent_depth=self.INDENT_DEPTH, children=block.children)
                     for block in blocks[1:]]
+        code_block.children = children
 
-        return CodeBlock(language=language, children=children)
-
-    def _get_code_language_from_header(self, root_block: ICodeBlock) -> str:
-        """
-        先頭の要素からコードブロックのハイライト言語を取得
-
-        :param root_block: 先頭のICodeBlock要素 「```<language>」で記述される
-        :return: 「Python」のような、ハイライト言語文字列
-        """
-
-        # ダウンキャストの代用として型ガードを利用
-        if not isinstance(root_block, CodeBlock):
-            return ''
-
-        # コードブロック要素は、
-        # ```HTML
-        # <div>code</div>
-        # のように表現されるので、先頭は言語属性を持つ
-        return root_block.language
+        return code_block

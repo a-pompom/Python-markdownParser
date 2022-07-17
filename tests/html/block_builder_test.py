@@ -350,7 +350,7 @@ class TestCodeBlockBuilder:
                 'List<String> list;',
                 (
                     f'<pre>{LINE_BREAK}'
-                    f'{INDENT}<code class="language-java hljs">{LINE_BREAK}'
+                    f'{INDENT}<code class="language-java hljs">'
                     f'List<String> list;'
                     f'{INDENT}</code>{LINE_BREAK}'
                     f'</pre>'
@@ -365,7 +365,7 @@ class TestCodeBlockBuilder:
                 '## [参考](url)',
                 (
                     f'<pre>{LINE_BREAK}'
-                    f'{INDENT}<code class="language- hljs">{LINE_BREAK}'
+                    f'{INDENT}<code class="language- hljs">'
                     f'## [参考](url)'
                     f'{INDENT}</code>{LINE_BREAK}'
                     f'</pre>'

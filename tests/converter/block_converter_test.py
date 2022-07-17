@@ -1,12 +1,10 @@
 import pytest
 
-from a_pompom_markdown_parser.converter.converter import group_same_range_blocks
 from a_pompom_markdown_parser.element.block import Block, ParagraphBlock, QuoteBlock, ListBlock, \
     ListItemBlock, CodeBlock, PlainBlock, ParseResult, HeadingBlock, CodeChildBlock
 from a_pompom_markdown_parser.element.inline import PlainInline
 from a_pompom_markdown_parser.converter.block_converter import BlockConverter, QuoteConverter, ListConverter, \
     CodeBlockConverter
-from a_pompom_markdown_parser.markdown.parser import MarkdownParser
 
 
 class TestBlockConverter:
@@ -302,9 +300,6 @@ class TestCodeBlockConverter:
                     CodeChildBlock(children=[
                         PlainInline(text='// comment')
                     ]),
-                    CodeBlock(language='', children=[
-                        PlainInline(text='')
-                    ]),
                 ]),
                 True
             ),
@@ -349,17 +344,12 @@ class TestCodeBlockConverter:
         [
             (
                 ParseResult(content=[
-                    CodeBlock(language='Python', children=[
-                        PlainInline(text='')
-                    ]),
+                    CodeBlock(language='Python', children=[]),
                     CodeChildBlock(children=[
                         PlainInline(text='# comment')
                     ]),
                     CodeChildBlock(children=[
                         PlainInline(text='instance = Klass()')
-                    ]),
-                    CodeBlock(language='', children=[
-                        PlainInline(text='')
                     ]),
                 ]),
                 CodeBlock(language='Python', children=[
@@ -369,17 +359,12 @@ class TestCodeBlockConverter:
                     PlainBlock(indent_depth=0, children=[
                         PlainInline(text='instance = Klass()')
                     ]),
-                    PlainBlock(indent_depth=0, children=[
-                        PlainInline(text='')
-                    ])
                 ])
             ),
 
             (
                 ParseResult(content=[
-                    CodeBlock(language='', children=[
-                        PlainInline(text='')
-                    ]),
+                    CodeBlock(language='', children=[]),
                     CodeChildBlock(children=[
                         PlainInline(text='## [参考](url)')
                     ]),

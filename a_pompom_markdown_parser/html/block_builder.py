@@ -290,13 +290,13 @@ class CodeBlockBuilder(IBuilder):
     # 子要素は複数行に及ぶため、改行/インデントはPlainBlock側が責務を持つ
     # example
     # <pre>
-    #     <code>
-    #         const i = 0;
+    #     <code>const i = 0;
     #     </code>
     # </pre>
+    # ※ codeタグの開始に改行を挟むと開始行に余計な空白が挟まるので改行せずに出力
     TEMPLATE = (
         f'<pre>{LINE_BREAK}'
-        f'{INDENT}<code class="{LANGUAGE_EXPRESSION}">{LINE_BREAK}'
+        f'{INDENT}<code class="{LANGUAGE_EXPRESSION}">'
         f'{TEXT_EXPRESSION}'
         f'{INDENT}</code>{LINE_BREAK}'
         f'</pre>'

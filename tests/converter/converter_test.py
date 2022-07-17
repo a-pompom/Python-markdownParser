@@ -2,9 +2,8 @@ import pytest
 
 from a_pompom_markdown_parser.converter.converter import Converter
 from a_pompom_markdown_parser.element.block import ParseResult, QuoteBlock, ParagraphBlock, HeadingBlock, CodeBlock, \
-    PlainBlock, ListBlock, ListItemBlock, TableOfContentsBlock
+    PlainBlock, ListBlock, ListItemBlock, TableOfContentsBlock, CodeChildBlock
 from a_pompom_markdown_parser.element.inline import PlainInline, LinkInline
-from a_pompom_markdown_parser.markdown.parser import MarkdownParser
 
 
 class TestConverter:
@@ -126,17 +125,12 @@ class TestConverter:
         [
             (
                 ParseResult(content=[
-                    CodeBlock(language='Python', children=[
-                        PlainInline(text='')
-                    ]),
-                    PlainBlock(indent_depth=0, children=[
+                    CodeBlock(language='Python', children=[]),
+                    CodeChildBlock(children=[
                         PlainInline(text='# comment, not heading')
                     ]),
-                    PlainBlock(indent_depth=0, children=[
+                    CodeChildBlock(children=[
                         PlainInline(text='def func():')
-                    ]),
-                    CodeBlock(language='', children=[
-                        PlainInline(text='')
                     ]),
                 ]),
                 ParseResult(content=[
@@ -153,13 +147,11 @@ class TestConverter:
 
             (
                 ParseResult(content=[
-                    CodeBlock(language='', children=[
-                        PlainInline(text='')
-                    ]),
-                    PlainBlock(indent_depth=0, children=[
+                    CodeBlock(language='', children=[]),
+                    CodeChildBlock(children=[
                         PlainInline(text='[参考](https://)')
                     ]),
-                    PlainBlock(indent_depth=0, children=[
+                    CodeChildBlock(children=[
                         PlainInline(text='> コードは終わっていたはずです')
                     ]),
                 ]),

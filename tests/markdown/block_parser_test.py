@@ -290,69 +290,6 @@ class TestList:
         assert actual == expected
 
 
-class TestCodeBlock:
-    """ ```で表現されるコードブロック要素"""
-
-    @pytest.mark.parametrize(
-        ('text', 'expected'),
-        [
-            ('```', True),
-            ('```python', True),
-            ('not code block', False),
-        ],
-        ids=['target for empty language', 'target', 'not target']
-    )
-    def test_is_target(self, text: str, expected: bool):
-        # GIVEN
-        sut = CodeBlockParser()
-        # WHEN
-        actual = sut.is_target(text)
-        # THEN
-        assert actual == expected
-
-    @pytest.mark.parametrize(
-        ('text', 'expected'),
-        [
-            ('```', ''),
-            ('```JavaScript', '')
-        ]
-    )
-    def test_extract_text(self, text: str, expected: str):
-        # GIVEN
-        sut = CodeBlockParser()
-        # WHEN
-        actual = sut.extract_text(text)
-        # THEN
-        assert actual == expected
-
-    @pytest.mark.parametrize(
-        ('text', 'expected'),
-        [
-            (
-                '```',
-                CodeBlock(language='', children=[
-                    PlainInline(text='')
-                ])
-            ),
-            (
-                '```HTML',
-                CodeBlock(language='HTML', children=[
-                    PlainInline(text='')
-                ])
-            ),
-        ],
-        ids=['empty language', 'some language']
-    )
-    def test_parse(self, text: str, expected: CodeBlock):
-        # GIVEN
-        sut = CodeBlockParser()
-        children = InlineParser().parse(sut.extract_text(text))
-        # WHEN
-        actual = sut.parse(text, children)
-        # THEN
-        assert actual == expected
-
-
 class TestHorizontalRule:
     """ ---で表現される水平線罫線要素を検証 """
 

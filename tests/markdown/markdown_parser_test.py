@@ -1,7 +1,7 @@
 import pytest
 
 from a_pompom_markdown_parser.element.block import ParseResult, ParagraphBlock, HeadingBlock, QuoteBlock, ListBlock, \
-    HorizontalRuleBlock, CodeBlock, PlainBlock
+    HorizontalRuleBlock, PlainBlock, CodeBlock, CodeChildBlock
 from a_pompom_markdown_parser.element.inline import PlainInline, LinkInline, CodeInline, ImageInline
 from a_pompom_markdown_parser.markdown.parser import MarkdownParser
 
@@ -166,14 +166,9 @@ class TestMarkdownParser:
                     HeadingBlock(size=3, children=[
                         PlainInline(text='サンプルコード')
                     ]),
-                    CodeBlock(language='Python', children=[
-                        PlainInline(text='')
-                    ]),
-                    PlainBlock(children=[
+                    CodeBlock(language='Python', children=[]),
+                    CodeChildBlock(children=[
                         PlainInline(text='# Pythonのコメント')
-                    ]),
-                    CodeBlock(language='', children=[
-                        PlainInline(text='')
                     ]),
                     HeadingBlock(size=4, children=[
                         PlainInline(text='上はサンプルコードです')
@@ -187,13 +182,11 @@ class TestMarkdownParser:
                     QuoteBlock(children=[
                         PlainInline(text='コードが始まります')
                     ]),
-                    CodeBlock(language='', children=[
-                        PlainInline(text='')
-                    ]),
-                    PlainBlock(indent_depth=0, children=[
+                    CodeBlock(language='', children=[]),
+                    CodeChildBlock(children=[
                         PlainInline(text='## コードを閉じるのを忘れました')
                     ]),
-                    PlainBlock(indent_depth=0, children=[
+                    CodeChildBlock(children=[
                         PlainInline(text='[まだコードです](url)')
                     ]),
                 ])
@@ -201,7 +194,7 @@ class TestMarkdownParser:
         ],
         ids=['no code block', 'code block with end symbol', 'no end symbol']
     )
-    def test_parse_code_block_mode(self, lines: list[str], expected: ParseResult):
+    def test_parse_code_block(self, lines: list[str], expected: ParseResult):
         # GIVEN
         sut = MarkdownParser()
         # WHEN
