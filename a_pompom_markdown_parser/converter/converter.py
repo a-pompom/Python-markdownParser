@@ -10,6 +10,7 @@ class Converter:
 
     def __init__(self):
         self._block_converter = BlockConverter()
+        self._toc_converter = TocConverter()
 
     def convert(self, markdown_result: ParseResult) -> ParseResult:
         """
@@ -24,8 +25,8 @@ class Converter:
         # こうすることで、コンバータはただ入力を統合したものを出力するだけでよい
         for convert_target in split_to_convert_target(markdown_result.content):
             # 目次
-            if len(convert_target) == 1 and isinstance(convert_target[0], TableOfContentsBlock):
-                convert_result_content += TocConverter().convert(markdown_result)
+            if self._toc_converter.is_target(convert_target):
+                convert_result_content += self._toc_converter.convert(markdown_result)
                 continue
 
             convert_result_content += self._block_converter.convert(convert_target)

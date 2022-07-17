@@ -1,7 +1,8 @@
 import dataclasses
 from typing import Generator
 
-from a_pompom_markdown_parser.element.block import ParseResult, HeadingBlock, ListBlock, ListItemBlock
+from a_pompom_markdown_parser.element.block import ParseResult, HeadingBlock, ListBlock, ListItemBlock, Block, \
+    TableOfContentsBlock
 from a_pompom_markdown_parser.element.inline import LinkInline
 from a_pompom_markdown_parser.block_utility import get_text_from_block
 
@@ -212,6 +213,17 @@ class TocGenerator:
 
 class TocConverter:
     """ 目次の構成要素となるHeading Blockから目次の実体と対応するBlock要素へ変換することを責務に持つ """
+
+    def is_target(self, blocks: list[Block]) -> bool:
+        """
+        参照しているBlock要素が目次要素であるか判定
+
+        :param blocks: 参照しているBlock要素
+        :return: Block要素が目次と対応->True, それ以外->False
+        """
+        # converterは同種のBlock単位で処理するので、もし目次のBlockが処理対象であった場合、単独で存在する
+        toc_candidate = blocks[0]
+        return isinstance(toc_candidate, TableOfContentsBlock)
 
     def convert(self, markdown_result: ParseResult) -> list[ListBlock]:
         """
