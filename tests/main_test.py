@@ -1,13 +1,86 @@
+import sys
 import pytest
-from a_pompom_markdown_parser.main import parse_md_to_html, parse_md_to_html_by_string
+from a_pompom_markdown_parser.main import parse_md_to_html, parse_md_to_html_by_string, validate_args, \
+    InvalidArgumentException
 from a_pompom_markdown_parser.settings import setting
 
 from tests.util_equality import assert_that_text_file_content_is_same
 
-
 LINE_BREAK = setting['newline_code']
 
-class TestMain:
+
+@pytest.fixture
+def overwrite_sys_argv():
+    """
+    コマンドライン引数をテスト用に上書きするためのfixture
+    """
+    original_args = sys.argv.copy()
+
+    def _overwrite(args: list[any]):
+        sys.argv = args
+
+    yield _overwrite
+    sys.argv = original_args
+
+
+class TestValidateValid:
+    """ 妥当なコマンドライン引数を受け付けられるか検証 """
+
+    # 妥当な引数を受け付けるか
+    def test_validate_args(self, overwrite_sys_argv):
+        # GIVEN
+        sut = validate_args
+        args = ['main.py', './template/markdown/plain.md', 'validate_test.txt']
+        # WHEN
+        overwrite_sys_argv(args)
+        sut()
+        # THEN
+        # 例外が送出されないことをもって妥当と判断
+        assert True
+
+
+class TestValidateInvalid:
+    """ 無効なコマンドライン引数を受け取ると例外を送出するか検証 """
+
+    # 引数の個数が指定と異なると、エラーメッセージが表示されるか
+    def test_invalid_arg_count(self, overwrite_sys_argv):
+        # GIVEN
+        sut = validate_args
+        expected_message = '入力ファイルパス, 出力ファイルパスを指定してください。'
+        args = [1, 2]
+        # WHEN
+        overwrite_sys_argv(args)
+        with pytest.raises(InvalidArgumentException) as e:
+            sut()
+        # THEN
+        assert e.value.args[0] == expected_message
+
+    def test_in_file_not_exist(self, overwrite_sys_argv):
+        # GIVEN
+        sut = validate_args
+        expected_message = '入力ファイルが見つかりません。'
+        args = ['main.py', 'nofile.txt', '/dev/null']
+        # WHEN
+        overwrite_sys_argv(args)
+        with pytest.raises(InvalidArgumentException) as e:
+            sut()
+        # THEN
+        assert e.value.args[0] == expected_message
+
+    def test_out_file_cannot_write(self, overwrite_sys_argv):
+        # GIVEN
+        sut = validate_args
+        expected_message = '出力先: "readonly.txt"は無効です。'
+        args = ['main.py', './template/markdown/plain.md', 'readonly.txt']
+        # WHEN
+        overwrite_sys_argv(args)
+        with pytest.raises(InvalidArgumentException) as e:
+            sut()
+        # THEN
+        assert e.value.args[0] == expected_message
+
+
+class TestParse:
 
     def test_plain(self):
         # GIVEN
