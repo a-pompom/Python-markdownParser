@@ -27,7 +27,7 @@ author = 'a-pompom'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinxcontrib.mermaid', 'myst_parser']
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'haiku'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -55,3 +55,4 @@ exclude_patterns = []
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_css_files = ['custom.css']
