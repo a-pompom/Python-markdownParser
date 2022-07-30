@@ -322,10 +322,28 @@ class CodeBlockBuilder(IBuilder):
         code_block = self.TEMPLATE.replace(
             self.LANGUAGE_EXPRESSION, language_class_name
         ).replace(
-            self.TEXT_EXPRESSION, child_text
+            self.TEXT_EXPRESSION, self._escape_html(child_text)
         )
 
         return code_block
+
+    def _escape_html(self, text: str) -> str:
+        """
+        HTML文字列をエスケープ
+        :param text: 対象テキスト
+        :return: HTML文字列がエスケープされたテキスト
+        """
+        return text.replace(
+            '&', "&amp;"
+        ).replace(
+            '<', "&lt;"
+        ).replace(
+            '>', "&gt;"
+        ).replace(
+            '"', "&quot;"
+        ).replace(
+            "'", "&#039;"
+        )
 
 
 class HorizontalRuleBuilder(IBuilder):

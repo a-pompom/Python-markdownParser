@@ -233,7 +233,7 @@ class TestHtmlBuilder:
                 (f'<pre>{LINE_BREAK}'
                  f'{INDENT}<code class="language-javascript hljs">'
                  f'someFunction(){LINE_BREAK}'
-                 f'> コードは終わっているはず。{LINE_BREAK}'
+                 f'&gt; コードは終わっているはず。{LINE_BREAK}'
                  f'{INDENT}</code>{LINE_BREAK}'
                  f'</pre>{LINE_BREAK}')
             ),
